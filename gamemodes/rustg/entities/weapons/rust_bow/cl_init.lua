@@ -1,0 +1,17 @@
+
+local BaseClass = baseclass.Get("rust_base")
+
+
+
+include("shared.lua")
+
+
+
+SWEP.VMPos = Vector()
+
+SWEP.VMAng = Vector()
+
+
+
+SWEP.DownPos = Vector(0, 0, -2)
+
