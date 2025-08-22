@@ -602,7 +602,7 @@ function HandleInventoryRequest(len, pl)
     if not IsValid(ent) then return end
     if not ent.Inventory then return end
     if ent ~= pl and ent:GetPos():Distance(pl:GetPos()) > 200 then return end
-    AddInventoryViewer(ent, pl)
+    //AddInventoryViewer(ent, pl)
     net.Start("gRust.Inventory.Request")
     net.WriteEntity(ent)
     local validItems = {}
