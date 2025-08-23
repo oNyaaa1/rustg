@@ -69,7 +69,7 @@ hook.Add("InitPostEntity", "SpawnRockyss", function()
 end)]]
 hook.Add("PlayerSpawn", "FixSpawnShiz", function(ply)
     for k, v in pairs(ents.FindInSphere(ply:GetPos(), 10)) do
-        if v:GetClass() == "sent_rocks" then ply:SetPos(v:GetPos() + Vector(v:OBBMins().x, v:OBBMins().y, v:OBBMins().z + 12)) end
+        if v:GetClass() == "rust_ore" then ply:SetPos(v:GetPos() + Vector(v:OBBMins().x, v:OBBMins().y, v:OBBMins().z + 12)) end
     end
 end)
 
