@@ -15,6 +15,8 @@ net.Receive("gRust.NetReady", function(len, ply)
             timer.Simple(0.1, function() if IsValid(ply) and IsValid(sleepingBag) then TransferSleepingBagToPlayer(ply, sleepingBag) end end)
         else
             ply:GiveItem("rock", 1)
+            ply:Give("rust_hands")
+            ply:SelectWeapon("rust_hands")
         end
     end
 end)
