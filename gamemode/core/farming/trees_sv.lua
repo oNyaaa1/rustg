@@ -73,25 +73,33 @@ hook.Add("PlayerSpawn", "FixSpawnShiz", function(ply)
     end
 end)
 
-local function BackwardsEnums(enumname)
-    local backenums = {}
-    for k, v in pairs(_G) do
-        if isstring(k) and string.find(k, "^" .. enumname) then backenums[v] = k end
-    end
-    return backenums
-end
-
 local WOOD_WEAPONS = {
-    ["rust_rock"]         = {mult = 1},     -- 550
-    ["rust_stonehatchet"] = {mult = 1.3},   -- 715
-    ["rust_hatchet"]      = {mult = 1.8}    -- 990
+    ["rust_rock"]         = {mult = 1},
+    ["rust_stonehatchet"] = {mult = 1.3},
+    ["rust_hatchet"]      = {mult = 1.8}
 }
 
 local ORE_WEAPONS = {
-    ["rust_rock"]         = {mult = 1},
-    ["rust_stonepickaxe"] = {mult = 1.3},
-    ["rust_pickaxe"]      = {mult = 2},
-    ["rust_jackhammer"]   = {mult = 3}
+    ["rust_rock"] = {
+        ["metal.ore"]  = 1,
+        ["sulfur.ore"] = 1,
+        ["stone"]      = 1
+    },
+    ["rust_stonepickaxe"] = {
+        ["metal.ore"]  = 1.94,
+        ["sulfur.ore"] = 2.57,
+        ["stone"]      = 2.11733
+    },
+    ["rust_pickaxe"] = {
+        ["metal.ore"]  = 2.4,
+        ["sulfur.ore"] = 3,
+        ["stone"]      = 2.667
+    },  
+    ["rust_jackhammer"] = {
+        ["metal.ore"]  = 2.4,
+        ["sulfur.ore"] = 3,
+        ["stone"]      = 2.667
+    }
 }
 
 local TREE_MODELS = {
@@ -114,9 +122,9 @@ local WOOD_SEQ = {6,14,22,32,43,55,68,83,99,128}
 local ORE_SEQ = {
     [1] = {item = "metal.ore",  seq = {25,25,25,25,25,25,25,25,25,25}},
     [2] = {item = "sulfur.ore", seq = {10,10,10,10,10,10,10,10,10,10}},
-    [3] = {item = "stone",      seq = {38,38,37,37,37,36,36,36,35,35}}
+    [3] = {item = "stone",      seq = {39,39,38,38,38,37,37,37,36,36}}
 }
-
+    
 hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local ply = dmg:GetAttacker()
     if not IsValid(ply) or not ply:IsPlayer() then return end
@@ -126,7 +134,6 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local class = wep:GetClass()
     local notify = nil
 
-    -- trees
     local maxHP = TREE_MODELS[ent:GetModel()]
     if maxHP then
         local tool = WOOD_WEAPONS[class]
@@ -142,13 +149,10 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
 
         ply:GiveItem("wood", reward)
         ply:SyncInventory()
-        ply:SendNotification("Wood", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
-
         if ent.treeHealth <= 0 then ent:Remove() end
         return
     end
 
-    -- ore
     if ent:GetClass() ~= "rust_ore" then return end
     local tool = ORE_WEAPONS[class]
     if not tool then return end
@@ -159,17 +163,16 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     end
 
     ent.oreHealth, ent.oreHits = ent.oreHealth - 1, ent.oreHits + 1
-    local idx    = math.min(ent.oreHits, #seq.seq)
-    local reward = math.Round(seq.seq[idx] * tool.mult)
-    if seq.item == "stone" and reward > 50 then reward = 50 end
-
+    local idx = math.min(ent.oreHits, #seq.seq)
+    
+    local multForOre = tool[seq.item] or 1
+    local reward = math.Round(seq.seq[idx] * multForOre)
+    
     local itemClass = seq.item
     local itemData = gRust.Items[itemClass]
     local itemName = itemData and itemData:GetName() or itemClass
 
     ply:GiveItem(seq.item, reward)
-
-    ply:SendNotification(itemName .. "", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
 
     if ent.oreHealth <= 0 then
         local pos = ent:GetPos()
@@ -183,67 +186,16 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
                 e:Activate()
             end
         end)
-    end
-end)
-
-
-local function GetRandomGroundPosition()
-    local attempts = 0
-    while attempts < 50 do
-        local p = Vector(math.random(-15000, 6000), math.random(-15000, 15000), 2000)
-        local tr = util.TraceLine({
-            start = p,
-            endpos = p - Vector(0, 0, 4000),
-            filter = function() return false end
-        })
-
-        if tr.Hit and not tr.HitSky then return tr.HitPos + Vector(0, 0, -15) end
-        attempts = attempts + 1
-    end
-    return Vector(0, 0, 0)
-end
-
-hook.Add("InitPostEntity", "SpawnRockyss", function()
-    timer.Simple(5, function()
-        if game.GetMap() == "rust_highland_v1_3a" then
-            for i = 1, 300 do
-                local pos = GetRandomGroundPosition()
-                if pos ~= Vector(0, 0, 0) then
-                    local e = ents.Create("rust_ore")
-                    if IsValid(e) then
-                        e:SetPos(pos)
-                        e:SetSkin(math.random(1, 3))
-                        e:Spawn()
-                        e:Activate()
-                    end
+        if ent:GetClass() == "rust_hemp" then
+            local pos = ent:GetPos()
+            timer.Simple(math.random(60,120),function()
+                local e1 = ents.Create("rust_hemp")
+                if IsValid(e1) then
+                    e1:SetPos(pos)
+                    e1:Spawn()
+                    e1:Activate()
                 end
-            end
+            end)
         end
-    end)
-
-    if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end
-end)
-
-concommand.Add("tp_ore", function(ply)
-    if not IsValid(ply) or not ply:IsPlayer() then return end
-    local ores = ents.FindByClass("rust_ore")
-    if #ores == 0 then
-        ply:ChatPrint("Нет доступных руд!")
-        return
-    end
-
-    local closest, dist, ppos = nil, math.huge, ply:GetPos()
-    for _, ore in ipairs(ores) do
-        if IsValid(ore) then
-            local d = ppos:Distance(ore:GetPos())
-            if d < dist then dist, closest = d, ore end
-        end
-    end
-
-    if IsValid(closest) then
-        ply:SetPos(closest:GetPos() + Vector(0, 0, 50))
-        ply:ChatPrint("Телепортирован к ближайшей руде!")
-    else
-        ply:ChatPrint("Не найдено валидных руд!")
     end
 end)
