@@ -76,22 +76,16 @@ function ENT:CanProcess()
     return true
 end
 
-function ENT:Toggle(ply)
+function ENT:Toggle()
     local enabled = self:GetNW2Bool("gRust.Enabled", false)
     if enabled == false then
         if self:CanProcess() then
             self:SetNW2Bool("gRust.Enabled", true)
             self:StartProcessing()
-            ply:SyncInventory()
-            ply:RequestInventory(ply)
-            ply:SyncInventory()
         end
     else
         self:SetNW2Bool("gRust.Enabled", false)
         self:StopProcessing()
-        ply:SyncInventory()
-        ply:RequestInventory(ply)
-        ply:SyncInventory()
     end
     return true
 end
@@ -102,7 +96,7 @@ end
 
 net.Receive("gRust.ProcessToggle", function(len, ply)
     local ent = net.ReadEntity()
-    if IsValid(ent) and ent:GetClass() == "rust_recycler" and ent.LastUser == ply then ent:Toggle(ply) end
+    if IsValid(ent) and ent:GetClass() == "rust_recycler" and ent.LastUser == ply then ent:Toggle() end
 end)
 
 function ENT:StartProcessing()
@@ -196,51 +190,6 @@ function ENT:CompleteProcess()
     end
 end
 
---[[
-function ENT:CompleteProcess()
-    for i = 6, 12 do
-        local item = self.Inventory[i]
-        if item then
-            local results = self:GetProcessResult(item:GetItem())
-            if results then
-                local canAddAll = true
-                for _, result in ipairs(results) do
-                    local targetSlot = self:FindEmptySlot(1, 6, gRust.CreateItem(result.item, result.amount))
-                    if not targetSlot then
-                        canAddAll = false
-                        break
-                    end
-                end
-
-                if canAddAll then
-                    --item:RemoveQuantity(1)
-                    if item:GetQuantity() <= 0 then
-                        --self:RemoveSlot(i)
-                    else
-                        --self:SyncAllSlots()
-                    end
-
-                    for _, result in ipairs(results) do
-                        self:AddItem(result.item, result.amount, nil, 1, 6)
-                    end
-
-                    break
-                else
-                    self:SetNW2Bool("gRust.Enabled", false)
-                    self:StopProcessing()
-                    return
-                end
-            end
-        end
-    end
-
-    self:StopProcessing()
-    if self:GetNW2Bool("gRust.Enabled", false) and self:CanProcess() then
-        timer.Simple(0.1, function() if IsValid(self) then self:StartProcessing() end end)
-    else
-        if self.StopOnEmpty then self:SetNW2Bool("gRust.Enabled", false) end
-    end
-end]]
 function ENT:FindEmptySlot(start, finish, item)
     if not self.Inventory then return nil end
     start = start or 1
@@ -272,6 +221,7 @@ function ENT:Togglez()
 end
 
 local Container
+local upd = nil
 function ENT:ConstructInventory(panel, data, rows)
     if IsValid(Container) then Container:Remove() end
     Container = panel:Add("Panel")
@@ -362,4 +312,13 @@ function ENT:ConstructInventory(panel, data, rows)
         gRust.CloseInventory()
         return
     end
+
+    upd = data.entity
 end
+
+timer.Create("gRust.RecyclerCheck", 1, 0, function()
+    if upd == nil then return end
+    net.Start("gRust.Inventory.Request")
+    net.WriteEntity(upd)
+    net.SendToServer()
+end)

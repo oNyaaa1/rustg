@@ -23,6 +23,8 @@ function gRust.UpdateInventory()
         gRust.Inventory.Slots:Update()
         gRust.Inventory.Attire:Update()
         if gRust.Inventory.Container then gRust.Inventory.UpdateContainer() end
+        gRust.Inventory.Slots:Update()
+        gRust.Inventory.Attire:Update()
     end
 end
 

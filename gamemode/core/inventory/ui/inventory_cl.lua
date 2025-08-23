@@ -118,24 +118,29 @@ local function MiddlePanel()
 	Frame.Slots = Grid
 end
 
+--Fix this code to update while dragging items
+local Framezz = nil
 local function RightPanel()
-	local Frame = gRust.Inventory
+	if Framezz and IsValid(Framezz.RightPanel) then Framezz.RightPanel:Remove() end
+	Framezz = gRust.Inventory
 	local scrw, scrh = ScrW(), ScrH()
-	local Panel = Frame:Add("Panel")
+	local Panel = Framezz:Add("Panel")
 	Panel:Dock(RIGHT)
-	Panel:SetWide(RightWidth + LeftShift)
+	Panel:SetWide(RightWidth + RightShift)
 	Panel.DropPanel = true
-	if Frame.Container then
-		Frame.UpdateContainer = function()
-			if not Frame.Container.ConstructInventory then return end
-			Frame.Container:ConstructInventory(Panel, {
+	if Framezz.Container then
+		Framezz.UpdateContainer = function()
+			if not Framezz.Container.ConstructInventory then return end
+			Framezz.Container:ConstructInventory(Panel, {
 				margin = Margin,
-				wide = RightWidth + LeftShift
+				wide = RightWidth + RightShift,
+				entity = Framezz.Container.Entity,
 			})
+			
 		end
 	end
 
-	Frame.RightPanel = Panel
+	Framezz.RightPanel = Panel
 end
 
 local MoveTime = 0.125

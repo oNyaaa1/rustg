@@ -1,4 +1,4 @@
-
+if SERVER then
     util.AddNetworkString("gRust.Inventory.Move")
     util.AddNetworkString("gRust.Inventory.Request")
     util.AddNetworkString("gRust.Inventory.SyncSlot")
@@ -7,7 +7,7 @@
     util.AddNetworkString("gRust.Inventory.Create")
     util.AddNetworkString("gRust.Inventory.Close")
     util.AddNetworkString("gRust.Drop")
-
+end
 
 local ENTITY = FindMetaTable("Entity")
 local PLAYER = FindMetaTable("Player")
@@ -311,138 +311,105 @@ function PLAYER:RequestInventory(entity)
 end
 
 function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
-	if not self.Inventory or not itemOrClass then return false end
+    if not self.Inventory or not itemOrClass then return false end
+    if type(itemOrClass) == "table" and itemOrClass.GetItem then
+        local item = itemOrClass
+        local targetSlot = slot
+        if targetSlot then
+            if targetSlot < 1 or targetSlot > self.InventorySlots then return false end
+            local existingItem = self.Inventory[targetSlot]
+            if existingItem then
+                if existingItem:CanStack(item) then
+                    local success, overflow = existingItem:Merge(item)
+                    if success then
+                        self:SyncSlot(targsetSlot)
+                        return true
+                    end
+                end
+                return false
+            else
+                self:SetSlot(item:Copy(), targetSlot)
+                return true
+            end
+        else
+            for i = 1, self.InventorySlots do
+                local existingItem = self.Inventory[i]
+                if existingItem and existingItem:CanStack(item) then
+                    local success, overflow = existingItem:Merge(item)
+                    if success then
+                        self:SyncSlot(i)
+                        return true
+                    end
+                end
+            end
 
-	local originalAmount = amount or 1
+            targetSlot = self:FindEmptySlot(1, self.InventorySlots, item)
+            if targetSlot then
+                self:SetSlot(item:Copy(), targetSlot)
+                return true
+            end
+        end
+        return false
+    end
 
-	if type(itemOrClass) == "table" and itemOrClass.GetItem then
-		local item = itemOrClass
-		local targetSlot = slot
+    local itemClass = itemOrClass
+    if not gRust.Items[itemClass] then return false end
+    amount = amount or 1
+    local remaining = amount
+    local ItemData = gRust.Items[itemClass]
+    local maxStack = ItemData:GetStack()
+    if slot then
+        if slot < 1 or slot > self.InventorySlots then return false end
+        local existingItem = self.Inventory[slot]
+        if existingItem then
+            if existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(remaining) then
+                existingItem:AddQuantity(remaining)
+                if wear and existingItem.SetWear then existingItem:SetWear(wear) end
+                if clip and existingItem.SetClip then existingItem:SetClip(clip) end
+                self:SyncSlot(slot)
+                return true
+            end
+            return false
+        else
+            local newItem = gRust.CreateItem(itemClass, remaining, wear)
+            if clip and newItem.SetClip then newItem:SetClip(clip) end
+            self:SetSlot(newItem, slot)
+            return true
+        end
+    end
 
-		if targetSlot then
-			if targetSlot < 1 or targetSlot > self.InventorySlots then return false end
+    while remaining > 0 do
+        local targetSlot = nil
+        for i = 1, self.InventorySlots do
+            local existingItem = self.Inventory[i]
+            if existingItem and existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(1) then
+                targetSlot = i
+                break
+            end
+        end
 
-			local existingItem = self.Inventory[targetSlot]
-			if existingItem then
-				if existingItem:CanStack(item) then
-					local success, overflow = existingItem:Merge(item)
-					if success then
-						self:SyncSlot(targetSlot)
-						local finalItemClass = item:GetItem()
-						hook.Call("gRust.ItemGiven", nil, self, finalItemClass, item:GetQuantity())
-						return true
-					end
-				end
-				return false
-			else
-				self:SetSlot(item:Copy(), targetSlot)
-				local finalItemClass = item:GetItem()
-				hook.Call("gRust.ItemGiven", nil, self, finalItemClass, item:GetQuantity())
-				return true
-			end
-		else
-			for i = 1, self.InventorySlots do
-				local existingItem = self.Inventory[i]
-				if existingItem and existingItem:CanStack(item) then
-					local success, overflow = existingItem:Merge(item)
-					if success then
-						self:SyncSlot(i)
-						local finalItemClass = item:GetItem()
-						hook.Call("gRust.ItemGiven", nil, self, finalItemClass, item:GetQuantity())
-						return true
-					end
-				end
-			end
-
-			targetSlot = self:FindEmptySlot(1, self.InventorySlots, item)
-			if targetSlot then
-				self:SetSlot(item:Copy(), targetSlot)
-				local finalItemClass = item:GetItem()
-				hook.Call("gRust.ItemGiven", nil, self, finalItemClass, item:GetQuantity())
-				return true
-			end
-		end
-
-		return false
-	end
-
-	local itemClass = itemOrClass
-	if not gRust.Items[itemClass] then return false end
-
-	amount = amount or 1
-	local remaining = amount
-	local ItemData = gRust.Items[itemClass]
-	local maxStack = ItemData:GetStack()
-
-	if slot then
-		if slot < 1 or slot > self.InventorySlots then return false end
-
-		local existingItem = self.Inventory[slot]
-		if existingItem then
-			if existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(remaining) then
-				existingItem:AddQuantity(remaining)
-				if wear and existingItem.SetWear then existingItem:SetWear(wear) end
-				if clip and existingItem.SetClip then existingItem:SetClip(clip) end
-				self:SyncSlot(slot)
-				hook.Call("gRust.ItemGiven", nil, self, itemClass, remaining)
-				return true
-			end
-			return false
-		else
-			local newItem = gRust.CreateItem(itemClass, remaining, wear)
-			if clip and newItem.SetClip then newItem:SetClip(clip) end
-			self:SetSlot(newItem, slot)
-			hook.Call("gRust.ItemGiven", nil, self, itemClass, remaining)
-			return true
-		end
-	end
-
-	while remaining > 0 do
-		local targetSlot = nil
-
-		for i = 1, self.InventorySlots do
-			local existingItem = self.Inventory[i]
-			if existingItem and existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(1) then
-				targetSlot = i
-				break
-			end
-		end
-
-		if not targetSlot then 
-			targetSlot = self:FindEmptySlot(1, self.InventorySlots, gRust.CreateItem(itemClass, 1)) 
-		end
-
-		if not targetSlot then break end
-
-		local existingItem = self.Inventory[targetSlot]
-		if existingItem then
-			local maxAddable = existingItem:GetMaxAddable()
-			local toAdd = math.min(remaining, maxAddable)
-			existingItem:AddQuantity(toAdd)
-			remaining = remaining - toAdd
-			self:SyncSlot(targetSlot)
-		else
-			local toAdd = math.min(remaining, maxStack)
-			local newItem = gRust.CreateItem(itemClass, toAdd, wear)
-			if clip and newItem.SetClip then newItem:SetClip(clip) end
-			if newItem then
-				self:SetSlot(newItem, targetSlot)
-				remaining = remaining - toAdd
-			else
-				break
-			end
-		end
-	end
-
-	local success = remaining == 0
-	
-	-- Уведомление при успешной выдаче
-	if success then
-		local givenAmount = originalAmount - remaining
-		hook.Call("gRust.ItemGiven", nil, self, itemClass, givenAmount)
-	end
-
-	return success
+        if not targetSlot then targetSlot = self:FindEmptySlot(1, self.InventorySlots, gRust.CreateItem(itemClass, 1)) end
+        if not targetSlot then break end
+        local existingItem = self.Inventory[targetSlot]
+        if existingItem then
+            local maxAddable = existingItem:GetMaxAddable()
+            local toAdd = math.min(remaining, maxAddable)
+            existingItem:AddQuantity(toAdd)
+            remaining = remaining - toAdd
+            self:SyncSlot(targetSlot)
+        else
+            local toAdd = math.min(remaining, maxStack)
+            local newItem = gRust.CreateItem(itemClass, toAdd, wear)
+            if clip and newItem.SetClip then newItem:SetClip(clip) end
+            if newItem then
+                self:SetSlot(newItem, targetSlot)
+                remaining = remaining - toAdd
+            else
+                break
+            end
+        end
+    end
+    return remaining == 0
 end
 
 function PLAYER:RemoveItem(itemClass, amount)
@@ -801,6 +768,7 @@ concommand.Add("giveitem", function(pl, cmd, args)
     local item = args[1]
     local amount = tonumber(args[2]) or 1
     local slot = tonumber(args[3])
+    LoggerAdmin("Player " .. pl:Nick() .. " gave " .. amount .. "x " .. item .. "to themselv")
     if pl:GiveItem(item, amount, slot) then
         pl:ChatPrint("Gave " .. amount .. "x " .. item)
     else
