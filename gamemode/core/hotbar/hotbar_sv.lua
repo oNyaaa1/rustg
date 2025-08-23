@@ -58,15 +58,15 @@ net.Receive("gRust.SelectWeapon", function(_, pl)
     SetPlayerWeapon(pl, slot)
 end)
 
-hook.Add("gRust.ItemMoved", "gRust.CheckPlayerWeaponMoved", function(pl, from, to)
-    if pl.SelectedSlotIndex == from or from == 0 or to == 0 or from == nil or to == nil then
+hook.Add("gRust.ItemMoved", "gRust.CheckPlayerWeaponMoved", function(pl, fromEnt, toEnt, from, to)
+    if not pl.SelectedSlotIndex then return end
+    if (fromEnt == pl and from == pl.SelectedSlotIndex) or
+       (toEnt   == pl and to   == pl.SelectedSlotIndex) then
         ClearPlayerWeapon(pl)
         SetPlayerWeapon(pl, pl.SelectedSlotIndex or 0)
-    elseif pl.SelectedSlotIndex == to then
-        ClearPlayerWeapon(pl)
-        SetPlayerWeapon(pl, to)
     end
 end)
+
 
 hook.Add("gRust.ItemDropped", "gRust.CheckPlayerWeaponDropped", function(pl, item, ent, slot)
     if pl.SelectedSlotIndex == slot then
