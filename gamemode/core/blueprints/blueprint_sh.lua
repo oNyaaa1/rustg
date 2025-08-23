@@ -4,7 +4,10 @@ function PLAYER:HasBlueprint(class)
     local Item = gRust.Items[class]
     if not Item then return false end
     if not Item:GetBlueprint() then return true end
-    return self.Blueprints[class] == true
+    if IsValid(self.Blueprints) then
+        return self.Blueprints[class] == true
+    end
+    return false
 end
 
 local function LoadBlueprintActions()
