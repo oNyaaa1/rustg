@@ -1,8 +1,5 @@
 AddCSLuaFile()
-if SERVER then
-    Logger("Loaded rust_recycler")
-end
-
+if SERVER then Logger("Loaded rust_recycler") end
 ENT.Base = "rust_process"
 ENT.Deploy = {}
 ENT.Deploy.Model = "models/environment/misc/recycler.mdl"
@@ -79,16 +76,22 @@ function ENT:CanProcess()
     return true
 end
 
-function ENT:Toggle()
+function ENT:Toggle(ply)
     local enabled = self:GetNW2Bool("gRust.Enabled", false)
     if enabled == false then
         if self:CanProcess() then
             self:SetNW2Bool("gRust.Enabled", true)
             self:StartProcessing()
+            ply:SyncInventory()
+            ply:RequestInventory(ply)
+            ply:SyncInventory()
         end
     else
         self:SetNW2Bool("gRust.Enabled", false)
         self:StopProcessing()
+        ply:SyncInventory()
+        ply:RequestInventory(ply)
+        ply:SyncInventory()
     end
     return true
 end
@@ -99,7 +102,7 @@ end
 
 net.Receive("gRust.ProcessToggle", function(len, ply)
     local ent = net.ReadEntity()
-    if IsValid(ent) and ent:GetClass() == "rust_recycler" and ent.LastUser == ply then ent:Toggle() end
+    if IsValid(ent) and ent:GetClass() == "rust_recycler" and ent.LastUser == ply then ent:Toggle(ply) end
 end)
 
 function ENT:StartProcessing()

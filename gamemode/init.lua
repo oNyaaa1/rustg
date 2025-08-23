@@ -17,6 +17,10 @@ local function EnsureGrustDir()
     end
 end
 
+concommand.Add("tele_rec", function(ply)
+    if not IsValid(ply) or not ply:IsSuperAdmin() then return end
+    ply:SetPos(Vector(8920.770508, -4912.804688, 820.12054))
+end)
 
 EnsureGrustDir()
 

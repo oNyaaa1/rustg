@@ -2,7 +2,7 @@ local PANEL = {}
 
 surface.CreateFont("gRust.ItemDescription", {
     font = "Roboto Condensed",
-    size = 50 * gRust.Scaling,
+    size = 28 * gRust.Scaling,
     weight = 500,
     antialias = true
 })

@@ -134,6 +134,13 @@ Item:SetStack(1000)
 Item:SetIcon("materials/items/resources/gears.png")
 Item:SetModel("models/items/gears.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Road Signs
@@ -146,6 +153,13 @@ Item:SetStack(1000)
 Item:SetIcon("materials/items/resources/road_signs.png")
 Item:SetModel("models/items/roadsigns.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Metal Pipe
@@ -158,6 +172,13 @@ Item:SetStack(1000)
 Item:SetIcon("materials/items/resources/metal_pipe.png")
 Item:SetModel("models/items/metalpipe.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Metal Spring
@@ -170,6 +191,13 @@ Item:SetStack(1000)
 Item:SetIcon("materials/items/resources/metal_spring.png")
 Item:SetModel("models/items/spring.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Sheet Metal
@@ -182,6 +210,13 @@ Item:SetStack(1000)
 Item:SetIcon("materials/items/resources/sheet_metal.png")
 Item:SetModel("models/items/sheetmetal.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Semi Auto Body
@@ -193,6 +228,13 @@ Item:SetCategory("Resources")
 Item:SetStack(10)
 Item:SetIcon("materials/items/resources/semi_auto_body.png")
 Item:SetModel("models/items/semibody.mdl")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Rifle Body
@@ -204,6 +246,13 @@ Item:SetCategory("Resources")
 Item:SetStack(10)
 Item:SetIcon("materials/items/resources/rifle_body.png")
 Item:SetModel("models/items/rifle_body.mdl")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- SMG Body
@@ -216,6 +265,13 @@ Item:SetStack(10)
 Item:SetIcon("materials/items/resources/smg_body.png")
 Item:SetModel("models/items/smgbody.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Tech Trash
@@ -228,6 +284,13 @@ Item:SetStack(50)
 Item:SetIcon("materials/items/resources/tech_trash.png")
 Item:SetModel("models/items/techtrash.mdl")
 Item:SetSound("metal")
+Item:SetCraft({
+    {
+        item = "metal.fragments",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Sewing Kit
@@ -240,6 +303,13 @@ Item:SetStack(50)
 Item:SetIcon("materials/items/resources/sewing_kit.png")
 Item:SetModel("models/items/sewingkit.mdl")
 Item:SetSound("cloth")
+Item:SetCraft({
+    {
+        item = "cloth",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Rope
@@ -257,6 +327,7 @@ Item:SetCraft({
         amount = 3
     },
 })
+
 gRust.RegisterItem(Item)
 --
 -- Tarp
@@ -268,6 +339,13 @@ Item:SetCategory("Resources")
 Item:SetStack(50)
 Item:SetIcon("materials/items/resources/tarp.png")
 Item:SetModel("models/items/tarp.mdl")
+Item:SetCraft({
+    {
+        item = "cloth",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Tarp
@@ -313,6 +391,13 @@ Item:SetCategory("Resources")
 Item:SetStack(50)
 Item:SetIcon("materials/items/resources/metal_blade.png")
 Item:SetModel("models/items/metalblade.mdl")
+Item:SetCraft({
+    {
+        item = "metal.refined",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Propane Tank
@@ -324,6 +409,13 @@ Item:SetCategory("Resources")
 Item:SetStack(5)
 Item:SetIcon("materials/items/resources/propane_tank.png")
 Item:SetModel("models/items/propanetank.mdl")
+Item:SetCraft({
+    {
+        item = "metal.refined",
+        amount = 3
+    },
+})
+
 gRust.RegisterItem(Item)
 --
 -- Electric Fuse

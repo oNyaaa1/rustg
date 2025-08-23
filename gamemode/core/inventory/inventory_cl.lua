@@ -1,5 +1,4 @@
 PLAYER = FindMetaTable("Player")
-
 function PLAYER:MoveSlot(from, to, old, new, amount)
     if not new then return end
     net.Start("gRust.Inventory.Move")
@@ -19,35 +18,26 @@ end
 
 function gRust.UpdateInventory()
     if not IsValid(LocalPlayer()) then return end
-    if IsValid(gRust.Hotbar) then
-        gRust.Hotbar:Update()
-    end
+    if IsValid(gRust.Hotbar) then gRust.Hotbar:Update() end
     if IsValid(gRust.Inventory) and IsValid(gRust.Inventory.Slots) then
         gRust.Inventory.Slots:Update()
         gRust.Inventory.Attire:Update()
-        if gRust.Inventory.Container then
-            gRust.Inventory.UpdateContainer()
-        end
+        if gRust.Inventory.Container then gRust.Inventory.UpdateContainer() end
     end
 end
 
 local function SyncSlot()
     local ent = net.ReadEntity()
-    if (!IsValid(ent)) then return end
+    if not IsValid(ent) then return end
     local pos = net.ReadUInt(6)
     local item = net.ReadItem()
-    if (!ent.Inventory) then return end
+    if not ent.Inventory then return end
     ent.Inventory[pos] = item
-
     if ent == LocalPlayer() then
-        if IsValid(gRust.Hotbar) and pos >= 1 and pos <= 6 then
-            gRust.Hotbar:Update()
-        end
+        if IsValid(gRust.Hotbar) and pos >= 1 and pos <= 6 then gRust.Hotbar:Update() end
         if IsValid(gRust.Inventory) and IsValid(gRust.Inventory.Slots) then
             gRust.Inventory.Slots:Update()
-            if pos >= 31 and pos <= 36 then
-                gRust.Inventory.Attire:Update()
-            end
+            if pos >= 31 and pos <= 36 then gRust.Inventory.Attire:Update() end
         end
     elseif gRust.Inventory.Container and gRust.Inventory.Container.Entity == ent then
         gRust.Inventory.UpdateContainer()
@@ -72,10 +62,9 @@ function SyncAll()
     for i = 1, net.ReadUInt(6) do
         pl.Inventory[net.ReadUInt(6)] = net.ReadItem()
     end
+
     pl.InventorySlots = net.ReadUInt(6)
-    timer.Simple(0, function()
-        gRust.UpdateInventory()
-    end)
+    timer.Simple(0, function() gRust.UpdateInventory() end)
 end
 
 function CreateInventory()
@@ -92,16 +81,11 @@ function SyncEntityContainer()
     for i = 1, itemCount do
         local slot = net.ReadUInt(6)
         local item = net.ReadItem()
-        if item then
-            ent.Inventory[slot] = item
-        end 
+        if item then ent.Inventory[slot] = item end
     end
+
     ent.InventorySlots = net.ReadUInt(6)
-    timer.Simple(0, function()
-        if IsValid(ent) then
-            gRust.UpdateInventory()
-        end
-    end)
+    timer.Simple(0, function() if IsValid(ent) then gRust.UpdateInventory() end end)
 end
 
 net.Receive("gRust.Inventory.SyncSlot", SyncSlot)
