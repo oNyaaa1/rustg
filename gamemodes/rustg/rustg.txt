@@ -1,8 +1,0 @@
-"rustg"
-{
-	"base"		    "base"
-	"title"		    "rust"
-	"maps"		    ""
-	"category"	    "rustorig"
-	"menusystem"	"1"
-}
