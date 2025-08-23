@@ -72,16 +72,6 @@ function SWEP:PrimaryAttack()
 
 end
 
-function SWEP:PrimaryAttack()
-
-end
-
-function SWEP:Throw()
-
-end
-
-
-
 function SWEP:Think()
 
 	BaseClass.Think(self)

@@ -48,8 +48,10 @@ end
 
 function ENT:OnTakeDamage(dmg)
     local ply = dmg:GetAttacker()
+    if not IsValid(ply) or not ply:IsPlayer() then return end
+    if not IsValid(ply:GetActiveWeapon()) then return end
     local wep = ply:GetActiveWeapon()
-    if not IsValid(ply) then return end
+   
     if not IsValid(self) then return end
     if IsValid(ply) and IsValid(wep) then
         -- 1 metal, 2 sulfur, 3 Rock
