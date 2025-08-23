@@ -7,7 +7,7 @@ DEFINE_BASECLASS("rust_storage")
 function ENT:Initialize()
     if CLIENT then return end
 
-    self:SetModel("models/environment/crates/crate2.mdl")
+    self:SetModel("models/environment/crates/crate.mdl")
     self:SetSolid(SOLID_VPHYSICS)
 
     if self.Deploy then
@@ -37,46 +37,6 @@ end
 function ENT:PopulateWithItems()
     local woodenCrateLootItems = {
         {
-            itemid = "wood",
-            amount = {50, 150},
-            chance = 0.8,
-        },
-        {
-            itemid = "stone",
-            amount = {50, 200},
-            chance = 0.7,
-        },
-        {
-            itemid = "metal.ore",
-            amount = {20, 100},
-            chance = 0.6,
-        },
-        {
-            itemid = "cloth",
-            amount = {10, 50},
-            chance = 0.5,
-        },
-        {
-            itemid = "leather",
-            amount = {5, 30},
-            chance = 0.4,
-        },
-        {
-            itemid = "fat.animal",
-            amount = {10, 40},
-            chance = 0.4,
-        },
-        {
-            itemid = "bone.fragments",
-            amount = {20, 80},
-            chance = 0.4,
-        },
-        {
-            itemid = "hammer",
-            amount = {1, 1},
-            chance = 0.3,
-        },
-        {
             itemid = "hatchet",
             amount = {1, 1},
             chance = 0.25,
@@ -87,103 +47,43 @@ function ENT:PopulateWithItems()
             chance = 0.25,
         },
         {
-            itemid = "spear.wooden",
+            itemid = "fuse",
             amount = {1, 1},
-            chance = 0.2,
+            chance = 0.10,
         },
         {
-            itemid = "bow.hunting",
-            amount = {1, 1},
-            chance = 0.15,
-        },
-        {
-            itemid = "arrow.wooden",
-            amount = {10, 30},
-            chance = 0.2,
-        },
-        {
-            itemid = "burlap.shirt",
-            amount = {1, 1},
-            chance = 0.25,
-        },
-        {
-            itemid = "burlap.pants",
-            amount = {1, 1},
-            chance = 0.25,
-        },
-        {
-            itemid = "burlap.shoes",
-            amount = {1, 1},
-            chance = 0.2,
-        },
-        {
-            itemid = "hide.pants",
-            amount = {1, 1},
-            chance = 0.15,
-        },
-        {
-            itemid = "hide.vest",
-            amount = {1, 1},
-            chance = 0.15,
-        },
-        {
-            itemid = "apple",
+            itemid = "metalblade",
             amount = {1, 5},
-            chance = 0.3,
-        },
-        {
-            itemid = "mushroom",
-            amount = {2, 8},
-            chance = 0.25,
-        },
-        {
-            itemid = "corn",
-            amount = {2, 10},
-            chance = 0.2,
-        },
-        {
-            itemid = "bandage",
-            amount = {1, 5},
-            chance = 0.3,
+            chance = 0.20,
         },
         {
             itemid = "rope",
             amount = {1, 3},
-            chance = 0.2,
+            chance = 0.18,
         },
         {
-            itemid = "tarp",
+            itemid = "semibody",
             amount = {1, 2},
             chance = 0.15,
         },
         {
-            itemid = "sewingkit",
+            itemid = "metalspring",
+            amount = {1, 2},
+            chance = 0.15,
+        },
+        {
+            itemid = "sheetmetal",
             amount = {1, 1},
-            chance = 0.1,
-        },
-        {
-            itemid = "gunpowder",
-            amount = {10, 50},
-            chance = 0.1,
-        },
-        {
-            itemid = "lowgradefuel",
-            amount = {20, 100},
-            chance = 0.1,
+            chance = 0.17,
         },
         {
             itemid = "scrap",
-            amount = {1, 10},
-            chance = 0.05,
+            amount = {10, 10},
+            chance = 100.0,
         },
         {
-            itemid = "pistol.eoka",
-            amount = {1, 1},
-            chance = 0.05,
-        },
-        {
-            itemid = "crossbow",
-            amount = {1, 1},
+            itemid = "metalpipe",
+            amount = {1, 6},
             chance = 0.03,
         },
         {
@@ -192,15 +92,10 @@ function ENT:PopulateWithItems()
             chance = 0.03,
         },
         {
-            itemid = "knife.bone",
-            amount = {1, 1},
-            chance = 0.05,
-        },
-        {
-            itemid = "torch",
-            amount = {1, 3},
-            chance = 0.1,
-        },
+            itemid = "gears",
+            amount = {2, 4},
+            chance = 0.15,
+        }
     }
     
     local availableItems = {}
@@ -223,7 +118,7 @@ function ENT:PopulateWithItems()
         end
     end
     
-    local itemCount = math.random(3, 8)
+    local itemCount = math.random(2, 5)
     
     local shuffledItems = {}
     for i = 1, #availableItems do
