@@ -1,16 +1,16 @@
-if SERVER then
-    util.AddNetworkString("gRust.Inventory.Move")
-    util.AddNetworkString("gRust.Inventory.Request")
-    util.AddNetworkString("gRust.Inventory.SyncSlot")
-    util.AddNetworkString("gRust.Inventory.Remove")
-    util.AddNetworkString("gRust.Inventory.SyncAll")
-    util.AddNetworkString("gRust.Inventory.Create")
-    util.AddNetworkString("gRust.Inventory.Close")
-    util.AddNetworkString("gRust.Drop")
-end
+
+util.AddNetworkString("gRust.Inventory.Move")
+util.AddNetworkString("gRust.Inventory.Request")
+util.AddNetworkString("gRust.Inventory.SyncSlot")
+util.AddNetworkString("gRust.Inventory.Remove")
+util.AddNetworkString("gRust.Inventory.SyncAll")
+util.AddNetworkString("gRust.Inventory.Create")
+util.AddNetworkString("gRust.Inventory.Close")
+util.AddNetworkString("gRust.Drop")
 
 local ENTITY = FindMetaTable("Entity")
 local PLAYER = FindMetaTable("Player")
+
 function ENTITY:SetSlotsLocked(locked, startSlot, endSlot)
     self.SlotsLocked = locked or false
     self.LockedStartSlot = startSlot or 7
@@ -35,9 +35,14 @@ end
 function ENTITY:SetSlot(item, slot)
     if not self.Inventory or not slot then return false end
     if slot > self.InventorySlots or slot < 1 then return false end
+
     self.Inventory[slot] = item
     self:SyncSlot(slot)
-    if slot >= 31 and slot <= 36 and item and self:IsPlayer() and self:IsClothingItem(item) then self:ApplyClothing(item, slot) end
+
+    if slot >= 31 and slot <= 36 and item and self:IsPlayer() and self:IsClothingItem(item) then 
+        self:ApplyClothing(item, slot) 
+    end
+
     return true
 end
 
@@ -57,29 +62,36 @@ function PLAYER:HasConflictingClothing(item, targetSlot)
     if not item then return false end
     local newItemType = self:GetAttireType(item)
     if newItemType == nil then return false end
+
     for slot = 31, 36 do
         if slot ~= targetSlot and self.Inventory[slot] then
             local existingType = self:GetAttireType(self.Inventory[slot])
             if existingType == newItemType then return true end
         end
     end
+
     return false
 end
 
 function PLAYER:CanPlaceInSlot(slot, item)
     if self:IsSlotLocked(slot) then return false end
+
     if slot >= 31 and slot <= 36 then
         if not self:IsClothingItem(item) then return false end
         if self:HasConflictingClothing(item, slot) then return false end
     end
+
     return true
 end
 
 function PLAYER:RemoveClothing(slot)
     if not self.EquippedAttire or not self.EquippedAttire[slot] then return end
+
     self.EquippedAttire[slot] = nil
+
     local hasOtherAttire = false
     local newModel = self.OriginalModel
+
     for slotNum, equippedAttire in pairs(self.EquippedAttire) do
         if equippedAttire and gRust.Attire[equippedAttire] then
             local attireData = gRust.Attire[equippedAttire]
@@ -92,6 +104,7 @@ function PLAYER:RemoveClothing(slot)
     end
 
     self:SetModel(newModel)
+
     if not hasOtherAttire then
         self.ArmorHead = nil
         self.ArmorBody = nil
@@ -102,14 +115,19 @@ end
 
 function PLAYER:ApplyClothing(item, slot)
     if not self.OriginalModel then self.OriginalModel = self:GetModel() end
+
     local itemClass = item:GetItem()
     local itemData = gRust.Items[itemClass]
     if not itemData then return end
+
     local attireId = itemData:GetAttire()
     if not attireId then return end
+
     local attireData = gRust.Attire[attireId]
     if not attireData then return end
+
     if attireData.model then self:SetModel(attireData.model) end
+
     if attireData.hands then
         self.CurrentHandsModel = attireData.hands
         self:SetupHands()
@@ -119,6 +137,7 @@ function PLAYER:ApplyClothing(item, slot)
     if attireData.body then self.ArmorBody = attireData.body end
     if attireData.arms then self.ArmorArms = attireData.arms end
     if attireData.legs then self.ArmorLegs = attireData.legs end
+
     self.EquippedAttire = self.EquippedAttire or {}
     self.EquippedAttire[slot] = attireId
 end
@@ -126,12 +145,17 @@ end
 function PLAYER:DropItem(slot, amount)
     if not self.Inventory or not slot then return false end
     if slot > self.InventorySlots or slot < 1 then return false end
+
     local item = self.Inventory[slot]
     if not item then return false end
+
     amount = amount or item:GetQuantity()
     amount = math.min(amount, item:GetQuantity())
+
     if amount <= 0 then return false end
+
     local dropItem
+
     if amount >= item:GetQuantity() then
         dropItem = item
         self:RemoveSlot(slot)
@@ -160,6 +184,7 @@ function PLAYER:DropItem(slot, amount)
     itemEnt:SetPos(self:GetPos() + self:GetForward() * 50 + Vector(0, 0, 30))
     itemEnt:SetAngles(Angle(0, math.random(0, 360), 0))
     itemEnt:Spawn()
+
     local phys = itemEnt:GetPhysicsObject()
     if IsValid(phys) then
         phys:Wake()
@@ -170,8 +195,12 @@ function PLAYER:DropItem(slot, amount)
     end
 
     local itemData = gRust.Items[dropItem:GetItem()]
-    if itemData and itemData:GetSound() then self:EmitSound(gRust.RandomGroupedSound(string.format("drop.%s", itemData:GetSound()))) end
+    if itemData and itemData:GetSound() then 
+        self:EmitSound(gRust.RandomGroupedSound(string.format("drop.%s", itemData:GetSound()))) 
+    end
+
     hook.Call("gRust.ItemDropped", nil, self, dropItem, itemEnt, slot)
+
     return true
 end
 
@@ -183,9 +212,13 @@ function PLAYER:IsClothingItem(item)
     return itemData:GetCategory() == "Clothing"
 end
 
+-- ИСПРАВЛЕННАЯ ФУНКЦИЯ СИНХРОНИЗАЦИИ
 function ENTITY:SyncSlot(slot)
     if not self.Inventory or not slot then return end
+
     local item = self.Inventory[slot]
+
+    -- Для игроков
     if self:IsPlayer() then
         if item then
             net.Start("gRust.Inventory.SyncSlot")
@@ -202,7 +235,14 @@ function ENTITY:SyncSlot(slot)
         return
     end
 
+    -- Для контейнеров - находим всех ближайших игроков
     local recipients = {}
+    for _, pl in pairs(player.GetAll()) do
+        if IsValid(pl) and pl:GetPos():Distance(self:GetPos()) <= 200 then
+            table.insert(recipients, pl)
+        end
+    end
+
     if #recipients > 0 then
         if item then
             net.Start("gRust.Inventory.SyncSlot")
@@ -237,6 +277,7 @@ function PLAYER:CreateInventory(slots)
     self.Inventory = {}
     self.InventorySlots = slots
     self.EquippedAttire = {}
+
     net.Start("gRust.Inventory.Create")
     net.WriteUInt(slots, 6)
     net.Send(self)
@@ -244,12 +285,14 @@ end
 
 function PLAYER:SyncInventory()
     if not self.Inventory then return end
+
     for i = 31, 36 do
         local item = self.Inventory[i]
         if item and self:IsClothingItem(item) then self:ApplyClothing(item, i) end
     end
 
     net.Start("gRust.Inventory.SyncAll")
+
     local validItems = {}
     for i = 1, self.InventorySlots do
         if self.Inventory[i] then
@@ -273,6 +316,7 @@ end
 function PLAYER:FindEmptySlot(startSlot, endSlot, item)
     startSlot = startSlot or 1
     endSlot = endSlot or self.InventorySlots
+
     if item and item:IsStackable() then
         for i = startSlot, endSlot do
             local existingItem = self.Inventory[i]
@@ -288,8 +332,10 @@ end
 function PLAYER:RequestInventory(entity)
     if not IsValid(entity) or not entity.Inventory then return end
     if entity:GetPos():Distance(self:GetPos()) > 200 then return end
+
     net.Start("gRust.Inventory.Request")
     net.WriteEntity(entity)
+
     local validItems = {}
     for i = 1, entity.InventorySlots do
         if entity.Inventory[i] then
@@ -312,17 +358,20 @@ end
 
 function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
     if not self.Inventory or not itemOrClass then return false end
+
     if type(itemOrClass) == "table" and itemOrClass.GetItem then
         local item = itemOrClass
         local targetSlot = slot
+
         if targetSlot then
             if targetSlot < 1 or targetSlot > self.InventorySlots then return false end
+
             local existingItem = self.Inventory[targetSlot]
             if existingItem then
                 if existingItem:CanStack(item) then
                     local success, overflow = existingItem:Merge(item)
                     if success then
-                        self:SyncSlot(targsetSlot)
+                        self:SyncSlot(targetSlot) -- исправлена опечатка
                         return true
                     end
                 end
@@ -349,17 +398,21 @@ function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
                 return true
             end
         end
+
         return false
     end
 
     local itemClass = itemOrClass
     if not gRust.Items[itemClass] then return false end
+
     amount = amount or 1
     local remaining = amount
     local ItemData = gRust.Items[itemClass]
     local maxStack = ItemData:GetStack()
+
     if slot then
         if slot < 1 or slot > self.InventorySlots then return false end
+
         local existingItem = self.Inventory[slot]
         if existingItem then
             if existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(remaining) then
@@ -380,6 +433,7 @@ function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
 
     while remaining > 0 do
         local targetSlot = nil
+
         for i = 1, self.InventorySlots do
             local existingItem = self.Inventory[i]
             if existingItem and existingItem:GetItem() == itemClass and existingItem:CanAddQuantity(1) then
@@ -388,8 +442,12 @@ function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
             end
         end
 
-        if not targetSlot then targetSlot = self:FindEmptySlot(1, self.InventorySlots, gRust.CreateItem(itemClass, 1)) end
+        if not targetSlot then 
+            targetSlot = self:FindEmptySlot(1, self.InventorySlots, gRust.CreateItem(itemClass, 1)) 
+        end
+
         if not targetSlot then break end
+
         local existingItem = self.Inventory[targetSlot]
         if existingItem then
             local maxAddable = existingItem:GetMaxAddable()
@@ -401,6 +459,7 @@ function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
             local toAdd = math.min(remaining, maxStack)
             local newItem = gRust.CreateItem(itemClass, toAdd, wear)
             if clip and newItem.SetClip then newItem:SetClip(clip) end
+
             if newItem then
                 self:SetSlot(newItem, targetSlot)
                 remaining = remaining - toAdd
@@ -409,22 +468,29 @@ function PLAYER:GiveItem(itemOrClass, amount, slot, wear, clip)
             end
         end
     end
+
     return remaining == 0
 end
 
 function PLAYER:RemoveItem(itemClass, amount)
     if not self.Inventory or not itemClass then return false end
+
     amount = amount or 1
     if not self:HasItem(itemClass, amount) then return false end
+
     local remaining = amount
+
     for i = 1, self.InventorySlots do
         if remaining <= 0 then break end
+
         local invItem = self.Inventory[i]
         if invItem and invItem:GetItem() == itemClass then
             local currentQty = invItem:GetQuantity()
             local takeAmount = math.min(remaining, currentQty)
+
             invItem:RemoveQuantity(takeAmount)
             remaining = remaining - takeAmount
+
             if invItem:GetQuantity() <= 0 then
                 self:RemoveSlot(i)
             else
@@ -432,23 +498,30 @@ function PLAYER:RemoveItem(itemClass, amount)
             end
         end
     end
+
     return remaining == 0
 end
 
 function PLAYER:HasItem(itemClass, amount)
     if not self.Inventory or not itemClass then return false end
+
     amount = amount or 1
     local totalAmount = 0
+
     for i = 1, self.InventorySlots do
         local invItem = self.Inventory[i]
-        if invItem and invItem:GetItem() == itemClass then totalAmount = totalAmount + invItem:GetQuantity() end
+        if invItem and invItem:GetItem() == itemClass then 
+            totalAmount = totalAmount + invItem:GetQuantity() 
+        end
     end
+
     return totalAmount >= amount
 end
 
 function PLAYER:ItemCount(itemType)
     local count = 0
     if not self.Inventory then return 0 end
+
     for _, item in pairs(self.Inventory) do
         if item:GetItem() == itemType then
             if item.GetAmount then
@@ -458,34 +531,44 @@ function PLAYER:ItemCount(itemType)
             end
         end
     end
+
     return count
 end
 
 function PLAYER:GetItemCount(itemClass)
     if not self.Inventory or not itemClass then return 0 end
+
     local total = 0
     for i = 1, self.InventorySlots do
         local invItem = self.Inventory[i]
-        if invItem and invItem:GetItem() == itemClass then total = total + invItem:GetQuantity() end
+        if invItem and invItem:GetItem() == itemClass then 
+            total = total + invItem:GetQuantity() 
+        end
     end
+
     return total
 end
 
+-- ИСПРАВЛЕННАЯ ФУНКЦИЯ ОБРАБОТКИ ПЕРЕМЕЩЕНИЯ
 function HandleMoveSlot(len, pl)
     local fromEnt = net.ReadEntity()
     local toEnt = net.ReadEntity()
     local oldSlot = net.ReadUInt(6)
     local newSlot = net.ReadUInt(6)
     local amount = net.ReadUInt(20)
+
     if not IsValid(fromEnt) or not IsValid(toEnt) then return end
     if not fromEnt.Inventory or not toEnt.Inventory then return end
     if oldSlot < 1 or newSlot < 1 then return end
     if oldSlot > fromEnt.InventorySlots or newSlot > toEnt.InventorySlots then return end
     if not pl:Alive() then return end
+
     local fromItem = fromEnt.Inventory[oldSlot]
     if not fromItem then return end
+
     if fromEnt ~= pl and fromEnt:GetPos():Distance(pl:GetPos()) > 200 then return end
     if toEnt ~= pl and toEnt:GetPos():Distance(pl:GetPos()) > 200 then return end
+
     if fromEnt:IsPlayer() and fromEnt ~= pl then
         pl:Freeze(true)
         pl:ChatPrint("ИДИ НАХУЙ ПИДОР Я ВСЁ ПОФИКСИЛ")
@@ -499,14 +582,18 @@ function HandleMoveSlot(len, pl)
     end
 
     if not toEnt:CanPlaceInSlot(newSlot, fromItem) then return end
+
     local toItem = toEnt.Inventory[newSlot]
     amount = math.min(amount, fromItem:GetQuantity())
+
     local isClothingSlot = toEnt:IsPlayer() and newSlot >= 31 and newSlot <= 36
     local wasClothingSlot = fromEnt:IsPlayer() and oldSlot >= 31 and oldSlot <= 36
+
     if toItem then
         if toItem:CanStack(fromItem) and toItem:CanAddQuantity(amount) then
             toItem:AddQuantity(amount)
             fromItem:RemoveQuantity(amount)
+
             if fromItem:GetQuantity() <= 0 then
                 fromEnt:RemoveSlot(oldSlot)
                 if wasClothingSlot and fromEnt:IsPlayer() then fromEnt:RemoveClothing(oldSlot) end
@@ -517,8 +604,10 @@ function HandleMoveSlot(len, pl)
             toEnt:SyncSlot(newSlot)
         else
             if not fromEnt:CanPlaceInSlot(oldSlot, toItem) then return end
+
             fromEnt:SetSlot(toItem, oldSlot)
             toEnt:SetSlot(fromItem, newSlot)
+
             if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(fromItem, newSlot) end
             if wasClothingSlot and fromEnt:IsPlayer() then
                 if toItem and fromEnt:IsClothingItem(toItem) then
@@ -532,6 +621,7 @@ function HandleMoveSlot(len, pl)
         if amount >= fromItem:GetQuantity() then
             toEnt:SetSlot(fromItem, newSlot)
             fromEnt:RemoveSlot(oldSlot)
+
             if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(fromItem, newSlot) end
             if wasClothingSlot and fromEnt:IsPlayer() then fromEnt:RemoveClothing(oldSlot) end
         else
@@ -539,10 +629,21 @@ function HandleMoveSlot(len, pl)
             if newItem then
                 toEnt:SetSlot(newItem, newSlot)
                 fromEnt:SyncSlot(oldSlot)
+
                 if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(newItem, newSlot) end
             end
         end
     end
+
+    -- ДОПОЛНИТЕЛЬНАЯ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ДЛЯ КОНТЕЙНЕРОВ
+    timer.Simple(0, function()
+        if IsValid(toEnt) and not toEnt:IsPlayer() then
+            toEnt:SyncSlot(newSlot)
+        end
+        if IsValid(fromEnt) and not fromEnt:IsPlayer() then
+            fromEnt:SyncSlot(oldSlot)
+        end
+    end)
 
     hook.Run("gRust.ItemMoved", pl, oldSlot, newSlot)
 end
@@ -551,10 +652,12 @@ function HandleItemDrop(len, pl)
     local ent = net.ReadEntity()
     local slot = net.ReadUInt(6)
     local amount = net.ReadUInt(20)
+
     if not IsValid(pl) or not pl:Alive() then return end
     if not IsValid(ent) then return end
     if ent ~= pl and ent:GetPos():Distance(pl:GetPos()) > 200 then return end
     if not ent.Inventory then return end
+
     if ent:IsPlayer() and ent ~= pl then
         pl:ChatPrint("ИДИ НАХУЙ ПИДОР Я ВСЁ ПОФИКСИЛ")
         return
@@ -564,11 +667,15 @@ function HandleItemDrop(len, pl)
         ent:DropItem(slot, amount)
     else
         if slot < 1 or slot > ent.InventorySlots then return end
+
         local item = ent.Inventory[slot]
         if not item then return end
+
         amount = math.min(amount, item:GetQuantity())
         if amount <= 0 then return end
+
         local dropItem
+
         if amount >= item:GetQuantity() then
             dropItem = item
             ent.Inventory[slot] = nil
@@ -588,6 +695,7 @@ function HandleItemDrop(len, pl)
             itemEnt:SetPos(ent:GetPos() + Vector(0, 0, 30) + VectorRand() * 20)
             itemEnt:SetAngles(Angle(0, math.random(0, 360), 0))
             itemEnt:Spawn()
+
             local phys = itemEnt:GetPhysicsObject()
             if IsValid(phys) then
                 phys:Wake()
@@ -599,12 +707,14 @@ end
 
 function HandleInventoryRequest(len, pl)
     local ent = net.ReadEntity()
+
     if not IsValid(ent) then return end
     if not ent.Inventory then return end
     if ent ~= pl and ent:GetPos():Distance(pl:GetPos()) > 200 then return end
-    //AddInventoryViewer(ent, pl)
+
     net.Start("gRust.Inventory.Request")
     net.WriteEntity(ent)
+
     local validItems = {}
     for i = 1, ent.InventorySlots do
         if ent.Inventory[i] then
@@ -625,7 +735,7 @@ function HandleInventoryRequest(len, pl)
     net.Send(pl)
 end
 
-net.Receive("gRust.Inventory.Close", HandleInventoryClose)
+-- HOOKS
 hook.Add("PlayerDisconnected", "gRust.Inventory.PlayerDisconnect", function(pl)
     if pl.Inventory then
         local hasItems = false
@@ -657,6 +767,7 @@ hook.Add("PlayerDisconnected", "gRust.Inventory.PlayerDisconnect", function(pl)
                 lootEnt.OwnerName = playerData.name
                 lootEnt:SetNWString("OwnerSteamID", lootEnt.OwnerSteamID)
                 lootEnt:SetNWString("OwnerName", lootEnt.OwnerName)
+
                 local itemCount = 0
                 for i = 1, 36 do
                     if playerData.inventory[i] then
@@ -702,6 +813,7 @@ hook.Add("PlayerDeath", "gRust.Inventory.PlayerDeath", function(pl)
                 lootEnt.OwnerName = playerData.name
                 lootEnt:SetNWString("OwnerSteamID", lootEnt.OwnerSteamID)
                 lootEnt:SetNWString("OwnerName", lootEnt.OwnerName)
+
                 local itemCount = 0
                 for i = 1, 36 do
                     if playerData.inventory[i] then
@@ -719,6 +831,7 @@ hook.Add("PlayerDeath", "gRust.Inventory.PlayerDeath", function(pl)
         pl.ArmorBody = nil
         pl.ArmorArms = nil
         pl.ArmorLegs = nil
+
         timer.Simple(0, function()
             if IsValid(pl) then
                 pl:SyncInventory()
@@ -727,7 +840,6 @@ hook.Add("PlayerDeath", "gRust.Inventory.PlayerDeath", function(pl)
         end)
     end
 end)
-
 
 function FindPlayerSleepingBag(player)
     local steamID = player:SteamID()
@@ -739,8 +851,10 @@ end
 
 function TransferSleepingBagToPlayer(player, sleepingBag)
     if not IsValid(player) or not IsValid(sleepingBag) then return false end
+
     local transferred = false
     local transferredItems = 0
+
     for i = 1, sleepingBag.InventorySlots do
         local item = sleepingBag.Inventory[i]
         if item then
@@ -757,18 +871,23 @@ function TransferSleepingBagToPlayer(player, sleepingBag)
         sleepingBag:Remove()
         return true
     end
+
     return false
 end
 
+-- NET RECEIVERS
 net.Receive("gRust.Inventory.Move", HandleMoveSlot)
 net.Receive("gRust.Inventory.Request", HandleInventoryRequest)
 net.Receive("gRust.Drop", HandleItemDrop)
+
+-- CONSOLE COMMANDS
 concommand.Add("giveitem", function(pl, cmd, args)
     if not pl:IsSuperAdmin() then return end
+
     local item = args[1]
     local amount = tonumber(args[2]) or 1
     local slot = tonumber(args[3])
-    LoggerAdmin("Player " .. pl:Nick() .. " gave " .. amount .. "x " .. item .. "to themselv")
+
     if pl:GiveItem(item, amount, slot) then
         pl:ChatPrint("Gave " .. amount .. "x " .. item)
     else
