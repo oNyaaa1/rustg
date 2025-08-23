@@ -277,11 +277,11 @@ function PANEL:Init()
 
 
 
-        RightPanel:AddButton(gRust.GetIcon("web"), "https://grust.co/")
+        RightPanel:AddButton(gRust.GetIcon("web"), gRust.ServerConfig.website)
 
-        RightPanel:AddButton(gRust.GetIcon("steam"), "https://steamcommunity.com/")
+        RightPanel:AddButton(gRust.GetIcon("steam"), gRust.ServerConfig.steam)
 
-        RightPanel:AddButton(gRust.GetIcon("discord"), "https://discord.com/")
+        RightPanel:AddButton(gRust.GetIcon("discord"), gRust.ServerConfig.discord)
 
         //RightPanel:InvalidateLayout(true)
 

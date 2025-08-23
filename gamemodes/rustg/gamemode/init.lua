@@ -2,8 +2,44 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("config.lua")
 include("shared.lua")
 include("config.lua")
-resource.AddWorkshop("3517690325")
-local BASE_HOSTNAME = "★ [RU] gRust | Vanilla | Wiped %d days ago | 7 Day Wipe"
+
+util.AddNetworkString("gRust.ServerConfig")
+
+
+local HOSTNAME_FILE = "grust/hostname.txt"
+local BASE_HOSTNAME = "★ [RU] gRust | Wiped %d days ago | 7 Day Wipe"
+
+local function EnsureGrustDir()
+    if file and file.CreateDir then
+        if not file.Exists("grust", "DATA") then
+            file.CreateDir("grust")
+        end
+    end
+end
+
+
+EnsureGrustDir()
+
+local function LoadHostnameTemplate()
+    if file and file.Exists and file.Read and file.Write then
+        -- Check if file exists, if not create it with default content
+        if not file.Exists(HOSTNAME_FILE, "DATA") then
+            file.Write(HOSTNAME_FILE, BASE_HOSTNAME)
+            Logger("Created hostname file with default template")
+        end
+        
+        -- Read the file content
+        local content = file.Read(HOSTNAME_FILE, "DATA")
+        if content and string.Trim(content) ~= "" then
+            Logger("Loaded hostname template from file: " .. string.Trim(content))
+            return string.Trim(content)
+        end
+    end
+
+    Logger("Using default hostname template")
+    return BASE_HOSTNAME
+end
+
 local TABLE_NAME = "wipe_data"
 local function InitializeDatabase()
     local query = string.format([[
@@ -70,7 +106,8 @@ end
 
 local function UpdateHostname()
     local daysSinceWipe = GetDaysSinceWipe()
-    local newHostname = string.format(BASE_HOSTNAME, daysSinceWipe)
+    local hostnameTemplate = LoadHostnameTemplate()
+    local newHostname = string.format(hostnameTemplate, daysSinceWipe)
     RunConsoleCommand("hostname", newHostname)
 end
 
@@ -99,14 +136,12 @@ end
 hook.Add("InitPostEntity", "WipeStart", function()
     timer.Simple(2, function()
         if InitializeDatabase() then
-            timer.Simple(0, function()
-                UpdateHostname()
-                local stats = GetWipeStats()
-            end)
-        else
+            UpdateHostname()
+            local stats = GetWipeStats()
         end
     end)
 end)
+
 
 timer.Create("WipeDailyUpdate", 86400, 0, function() UpdateHostname() end)
 timer.Create("WipeHourlyCheck", 3600, 0, function()

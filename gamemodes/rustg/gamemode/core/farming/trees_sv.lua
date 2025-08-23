@@ -1,5 +1,5 @@
 --
-print("Loading Trees sv")
+Logger("Loading mining system")
 --[[local function BackwardsEnums(enumname)
     local backenums = {}
     for k, v in pairs(_G) do
@@ -81,68 +81,111 @@ local function BackwardsEnums(enumname)
     return backenums
 end
 
--- 10 ударов(hits) → 500 дерева(wood)
-local WOOD_SEQ = {40, 45, 45, 50, 50, 50, 50, 55, 55, 60}
--- 10 ударов(hits) → 100 / 250 / 375 руды(ore)
-local ORE_SEQ = {
-    [1] = {
-        item = "metal.ore", -- 250
-        seq = {25, 25, 25, 25, 25, 25, 25, 25, 25, 25}
-    },
-    [2] = {
-        item = "sulfur.ore", -- 100
-        seq = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
-    },
-    [3] = {
-        item = "stone", -- 375
-        seq = {38, 38, 37, 37, 37, 36, 36, 36, 35, 35}
-    }
+local WOOD_WEAPONS = {
+    ["rust_rock"]         = {mult = 1},     -- 550
+    ["rust_stonehatchet"] = {mult = 1.3},   -- 715
+    ["rust_hatchet"]      = {mult = 1.8}    -- 990
 }
 
-hook.Add("EntityTakeDamage", "EntityDamageExample", function(ent, dmginfo)
-    local MAT = BackwardsEnums("MAT_")
-    local ply = dmginfo:GetAttacker()
-    if not IsValid(ply) then return end
-    -- wood
-    if MAT[ent:GetMaterialType()] == "MAT_WOOD" then
-        ent.treeHits = (ent.treeHits or 0) + 1
-        local reward = WOOD_SEQ[math.min(ent.treeHits, #WOOD_SEQ)]
-        timer.Simple(0, function()
-            if IsValid(ply) then
-                ply:SyncInventory()
-                ply:GiveItem("wood", reward)
-            end
-        end)
+local ORE_WEAPONS = {
+    ["rust_rock"]         = {mult = 1},
+    ["rust_stonepickaxe"] = {mult = 1.3},
+    ["rust_pickaxe"]      = {mult = 2},
+    ["rust_jackhammer"]   = {mult = 3}
+}
 
-        if ent.treeHits >= #WOOD_SEQ then ent:Remove() end
+local TREE_MODELS = {
+    ["models/props_foliage/ah_super_large_pine002.mdl"] = 220,
+    ["models/props_foliage/ah_large_pine.mdl"]          = 190,
+    ["models/props/cs_militia/tree_large_militia.mdl"]  = 140,
+    ["models/props_foliage/ah_medium_pine.mdl"]         = 220,
+    ["models/brg_foliage/tree_scotspine1.mdl"]          = 160,
+    ["models/props_foliage/ah_super_pine001.mdl"]       = 180,
+    ["models/props_foliage/ah_ash_tree001.mdl"]         = 190,
+    ["models/props_foliage/ah_ash_tree_cluster1.mdl"]   = 140,
+    ["models/props_foliage/ah_ash_tree_med.mdl"]        = 170,
+    ["models/props_foliage/ah_hawthorn_sm_static.mdl"]  = 150,
+    ["models/props_foliage/coldstream_cedar_trunk.mdl"] = 170,
+    ["models/props_foliage/ah_ash_tree_lg.mdl"]         = 190
+}
+
+local WOOD_SEQ = {6,14,22,32,43,55,68,83,99,128}
+
+local ORE_SEQ = {
+    [1] = {item = "metal.ore",  seq = {25,25,25,25,25,25,25,25,25,25}},
+    [2] = {item = "sulfur.ore", seq = {10,10,10,10,10,10,10,10,10,10}},
+    [3] = {item = "stone",      seq = {38,38,37,37,37,36,36,36,35,35}}
+}
+
+hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
+    local ply = dmg:GetAttacker()
+    if not IsValid(ply) or not ply:IsPlayer() then return end
+
+    local wep   = ply:GetActiveWeapon()
+    if not IsValid(wep) then return end
+    local class = wep:GetClass()
+    local notify = nil
+
+    -- trees
+    local maxHP = TREE_MODELS[ent:GetModel()]
+    if maxHP then
+        local tool = WOOD_WEAPONS[class]
+        if not tool then return end
+
+        if not ent.treeHealth then
+            ent.treeHealth, ent.treeHits = maxHP, 0
+        end
+
+        ent.treeHealth, ent.treeHits = ent.treeHealth - 20, ent.treeHits + 1
+        local idx    = math.min(ent.treeHits, #WOOD_SEQ)
+        local reward = math.Round(WOOD_SEQ[idx] * tool.mult)
+
+        ply:GiveItem("wood", reward)
+        ply:SyncInventory()
+        ply:SendNotification("Wood", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
+
+        if ent.treeHealth <= 0 then ent:Remove() end
         return
     end
 
     -- ore
     if ent:GetClass() ~= "rust_ore" then return end
-    ent.oreHits = (ent.oreHits or 0) + 1
-    local data = ORE_SEQ[ent:GetSkin()]
-    if data then
-        local reward = data.seq[math.min(ent.oreHits, #data.seq)]
-        ply:GiveItem(data.item, reward)
+    local tool = ORE_WEAPONS[class]
+    if not tool then return end
+
+    local seq = ORE_SEQ[ent:GetSkin()] or ORE_SEQ[1]
+    if not ent.oreHealth then
+        ent.oreHealth, ent.oreHits = #seq.seq, 0
     end
 
-    if not ent.oreHealth then ent.oreHealth = #data.seq end
-    ent.oreHealth = ent.oreHealth - 1
+    ent.oreHealth, ent.oreHits = ent.oreHealth - 1, ent.oreHits + 1
+    local idx    = math.min(ent.oreHits, #seq.seq)
+    local reward = math.Round(seq.seq[idx] * tool.mult)
+    if seq.item == "stone" and reward > 50 then reward = 50 end
+
+    local itemClass = seq.item
+    local itemData = gRust.Items[itemClass]
+    local itemName = itemData and itemData:GetName() or itemClass
+
+    ply:GiveItem(seq.item, reward)
+
+    ply:SendNotification(itemName .. "", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
+
     if ent.oreHealth <= 0 then
         local pos = ent:GetPos()
         ent:Remove()
-        timer.Simple(math.random(300, 600), function()
+        timer.Simple(math.random(300,600),function()
             local e = ents.Create("rust_ore")
             if IsValid(e) then
                 e:SetPos(pos)
-                e:SetSkin(math.random(1, 3))
+                e:SetSkin(math.random(1,3))
                 e:Spawn()
                 e:Activate()
             end
         end)
     end
 end)
+
 
 local function GetRandomGroundPosition()
     local attempts = 0

@@ -1,5 +1,8 @@
 AddCSLuaFile()
-print("(Updated) Loaded rust_recycler.lua")
+if SERVER then
+    Logger("Loaded rust_recycler")
+end
+
 ENT.Base = "rust_process"
 ENT.Deploy = {}
 ENT.Deploy.Model = "models/environment/misc/recycler.mdl"
@@ -82,7 +85,6 @@ function ENT:Toggle()
         if self:CanProcess() then
             self:SetNW2Bool("gRust.Enabled", true)
             self:StartProcessing()
-            print("Started Processing")
         end
     else
         self:SetNW2Bool("gRust.Enabled", false)

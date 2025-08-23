@@ -768,6 +768,7 @@ concommand.Add("giveitem", function(pl, cmd, args)
     local item = args[1]
     local amount = tonumber(args[2]) or 1
     local slot = tonumber(args[3])
+    LoggerAdmin("Player " .. pl:Nick() .. " gave " .. amount .. "x " .. item .. "to themselv")
     if pl:GiveItem(item, amount, slot) then
         pl:ChatPrint("Gave " .. amount .. "x " .. item)
     else

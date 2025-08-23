@@ -3,6 +3,6 @@
 	"base"		    "base"
 	"title"		    "rust"
 	"maps"		    ""
-	"category"	    "rust"
+	"category"	    "rustorig"
 	"menusystem"	"1"
 }

@@ -2,6 +2,7 @@ local PLAYER = FindMetaTable("Player")
 function PLAYER:HasBlueprint(class)
     if not gRust.Config.Blueprints then return true end
     local Item = gRust.Items[class]
+    if not Item then return false end
     if not Item:GetBlueprint() then return true end
     return self.Blueprints[class] == true
 end

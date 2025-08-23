@@ -41,13 +41,15 @@ end
 
 
 function gRust.UpdateTechTree()
-
     if (!IsValid(gRust.TechTreeMenu)) then return end
-
     gRust.TechTreeMenu:Update()
-
 end
 
-
+net.Receive("gRust.OpenTechTree", function()
+    local ent = net.ReadEntity()
+    if IsValid(ent) then
+        gRust.ToggleTechTree(ent)
+    end
+end)
 
 net.Receive("gRust.UpdateTechTree", gRust.UpdateTechTree)
