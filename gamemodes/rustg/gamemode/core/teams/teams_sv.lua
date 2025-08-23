@@ -66,22 +66,22 @@ function gRust.InviteToTeam(inviter, target)
     local inviterTeam = gRust.Teams[inviterSID]
     
     if (!inviterTeam) then
-        inviter:ChatPrint("Вы не состоите в команде! Создайте команду сначала.")
+        inviter:ChatPrint("You are not in a team! Create a team first.")
         return
     end
     
     if (inviterTeam.leader != inviterSID) then
-        inviter:ChatPrint("Только лидер команды может приглашать игроков!")
+        inviter:ChatPrint("Only the team leader can invite players!")
         return
     end
     
     if (gRust.Teams[targetSID]) then
-        inviter:ChatPrint("Игрок " .. target:Nick() .. " уже состоит в команде!")
+        inviter:ChatPrint("Player " .. target:Nick() .. " is already in a team!")
         return
     end
     
     if (gRust.TeamInvites[targetSID]) then
-        inviter:ChatPrint("Игрок " .. target:Nick() .. " уже имеет активное приглашение!")
+        inviter:ChatPrint("Player " .. target:Nick() .. " already has an active invitation!")
         return
     end
     
@@ -91,15 +91,15 @@ function gRust.InviteToTeam(inviter, target)
         time = CurTime()
     }
     
-    inviter:ChatPrint("Приглашение отправлено игроку " .. target:Nick())
-    target:ChatPrint("Игрок " .. inviter:Nick() .. " приглашает вас в команду!")
-    target:ChatPrint("Напишите /accept чтобы принять или /decline чтобы отклонить")
+    inviter:ChatPrint("Invitation sent to player " .. target:Nick())
+    target:ChatPrint("Player " .. inviter:Nick() .. " invites you to join their team!")
+    target:ChatPrint("Type /accept to accept or /decline to decline")
     
     timer.Simple(60, function()
         if (gRust.TeamInvites[targetSID]) then
             gRust.TeamInvites[targetSID] = nil
             if (IsValid(target)) then
-                target:ChatPrint("Приглашение в команду истекло.")
+                target:ChatPrint("Team invitation has expired.")
             end
         end
     end)
@@ -112,14 +112,14 @@ function gRust.AcceptInvite(ply)
     local invite = gRust.TeamInvites[playerSID]
     
     if (!invite) then
-        ply:ChatPrint("У вас нет активных приглашений в команду!")
+        ply:ChatPrint("You have no active team invitations!")
         return
     end
     
     local teamData = invite.teamData
     if (!teamData or !teamData.members or #teamData.members == 0) then
         gRust.TeamInvites[playerSID] = nil
-        ply:ChatPrint("Команда больше не существует!")
+        ply:ChatPrint("The team no longer exists!")
         return
     end
     
@@ -130,18 +130,18 @@ function gRust.AcceptInvite(ply)
     
     SyncTeamToMembers(teamData)
     
-    ply:ChatPrint("Вы присоединились к команде!")
+    ply:ChatPrint("You joined the team!")
     
     local inviter = player.GetByAccountID(invite.inviter)
     if (IsValid(inviter)) then
-        inviter:ChatPrint("Игрок " .. ply:Nick() .. " присоединился к команде!")
+        inviter:ChatPrint("Player " .. ply:Nick() .. " joined the team!")
     end
     
     for _, memberSID in ipairs(teamData.members) do
         if (memberSID != playerSID and memberSID != invite.inviter) then
             local member = player.GetByAccountID(memberSID)
             if (IsValid(member)) then
-                member:ChatPrint("Игрок " .. ply:Nick() .. " присоединился к команде!")
+                member:ChatPrint("Player " .. ply:Nick() .. " joined the team!")
             end
         end
     end
@@ -154,7 +154,7 @@ function gRust.DeclineInvite(ply)
     local invite = gRust.TeamInvites[playerSID]
     
     if (!invite) then
-        ply:ChatPrint("У вас нет активных приглашений в команду!")
+        ply:ChatPrint("You have no active team invitations!")
         return
     end
     
@@ -162,9 +162,9 @@ function gRust.DeclineInvite(ply)
     
     gRust.TeamInvites[playerSID] = nil
     
-    ply:ChatPrint("Вы отклонили приглашение в команду.")
+    ply:ChatPrint("You declined the team invitation.")
     if (IsValid(inviter)) then
-        inviter:ChatPrint("Игрок " .. ply:Nick() .. " отклонил приглашение в команду.")
+        inviter:ChatPrint("Player " .. ply:Nick() .. " declined the team invitation.")
     end
 end
 
@@ -174,7 +174,7 @@ local function CreateTeam(len, ply)
     local playerSID = ply:AccountID()
     
     if (gRust.Teams[playerSID]) then
-        ply:ChatPrint("Вы уже состоите в команде!")
+        ply:ChatPrint("You are already in a team!")
         return
     end
     
@@ -188,7 +188,7 @@ local function CreateTeam(len, ply)
     
     SyncTeamToPlayer(ply)
     
-    ply:ChatPrint("Команда успешно создана! Нажмите E на игроке чтобы пригласить его.")
+    ply:ChatPrint("Team successfully created! Press E on a player to invite them.")
 end
 
 local function LeaveTeam(len, ply)
@@ -198,7 +198,7 @@ local function LeaveTeam(len, ply)
     local teamData = gRust.Teams[playerSID]
     
     if (!teamData) then
-        ply:ChatPrint("Вы не состоите в команде!")
+        ply:ChatPrint("You are not in a team!")
         return
     end
     
@@ -216,7 +216,7 @@ local function LeaveTeam(len, ply)
             teamData.leader = teamData.members[1]
             local newLeader = player.GetByAccountID(teamData.leader)
             if (IsValid(newLeader)) then
-                newLeader:ChatPrint("Вы стали новым лидером команды!")
+                newLeader:ChatPrint("You are now the new team leader!")
             end
         end
         
@@ -231,7 +231,7 @@ local function LeaveTeam(len, ply)
     
     SyncTeamToPlayer(ply)
     
-    ply:ChatPrint("Вы покинули команду!")
+    ply:ChatPrint("You left the team!")
 end
 
 net.Receive("gRust.CreateTeam", CreateTeam)

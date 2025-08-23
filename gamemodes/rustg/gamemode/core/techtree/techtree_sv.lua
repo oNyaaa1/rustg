@@ -75,7 +75,7 @@ local function LoadPlayerBlueprints(ply)
     
     local data = sql.Query(query)
     if sql.LastError() then
-        print("Ошибка загрузки чертежей для " .. ply:Nick() .. ": " .. sql.LastError())
+        LoggerErr("Error loading blueprints for " .. ply:Nick() .. ": " .. sql.LastError())
         return
     end
     
@@ -88,7 +88,7 @@ local function LoadPlayerBlueprints(ply)
             ply.Blueprints[row.blueprint] = true
             ply:AddBlueprint(row.blueprint)
         end
-        print("Загружено " .. #data .. " чертежей для " .. ply:Nick())
+        Logger("Loaded " .. #data .. " blueprints for " .. ply:Nick())
     end
     
     AddBasicBlueprints(ply)
@@ -178,50 +178,50 @@ net.Receive("gRust.TechTreeBuy", function(len, ply)
     if (!itemClass or itemClass == "") then return end
     
     if (entity:GetPos():Distance(ply:GetPos()) > 200) then
-        //ply:ChatPrint("Вы слишком далеко от стола исследований!")
+        ply:ChatPrint("You are too far from the research table!")
         return
     end
     
     local itemData = gRust.Items[itemClass]
     if (!itemData) then
-        //ply:ChatPrint("Неизвестный предмет!")
+        ply:ChatPrint("Unknown item!")
         return
     end
     
     if (!itemData:GetBlueprint()) then
-        //ply:ChatPrint("Этот предмет не требует изучения!")
+        ply:ChatPrint("This item doesn't require learning!")
         return
     end
     
     if (ply:HasBlueprint(itemClass)) then
-        //ply:ChatPrint("Вы уже знаете этот чертеж!")
+        ply:ChatPrint("You already know this blueprint!")
         return
     end
     
     local techTree = entity.TechTree
     if (!techTree) then
-        //ply:ChatPrint("У этого стола исследований нет дерева технологий!")
+        ply:ChatPrint("This research table has no tech tree!")
         return
     end
     
     if (!HasPathToItem(ply, techTree, itemClass)) then
-        //ply:ChatPrint("Вы не можете изучить этот предмет! Изучите необходимые предыдущие технологии.")
+        ply:ChatPrint("You cannot learn this item! Learn the required previous technologies.")
         return
     end
     
     local cost = GetItemCost(itemClass)
     if (cost <= 0) then
-        //ply:ChatPrint("Стоимость предмета не определена!")
+        ply:ChatPrint("Item cost is not defined!")
         return
     end
     
     if (!HasEnoughScrap(ply, cost)) then
-        //ply:ChatPrint("У вас недостаточно скрапа! Требуется: " .. cost)
+        ply:ChatPrint("You don't have enough scrap! Required: " .. cost)
         return
     end
     
     if (!TakeScrap(ply, cost)) then
-        //ply:ChatPrint("Не удалось списать скрап!")
+        ply:ChatPrint("Failed to deduct scrap!")
         return
     end
     
@@ -230,7 +230,7 @@ net.Receive("gRust.TechTreeBuy", function(len, ply)
     
     SavePlayerBlueprint(ply:SteamID(), itemClass)
     
-    //ply:ChatPrint("Вы изучили: " .. itemData:GetName() .. " за " .. cost .. " скрапа!")
+    ply:ChatPrint("You learned: " .. itemData:GetName() .. " for " .. cost .. " scrap!")
     
     SyncPlayerBlueprints(ply)
     
@@ -241,17 +241,17 @@ net.Receive("gRust.TechTreeBuy", function(len, ply)
 end)
 
 hook.Add("PlayerUse", "gRust.TechTreeUse", function(ply, ent)
-    if (!ent.TechTree) then return end
+    if not ent.TechTree then return end
     
     if not ply.TechTreeCooldown then
         ply.TechTreeCooldown = 0
     end
     
-    if 1 < ply.TechTreeCooldown then
+    if CurTime() < ply.TechTreeCooldown then
         return false
     end
     
-    ply.TechTreeCooldown = 1
+    ply.TechTreeCooldown = CurTime() + 0.5 -- 0.5 second cooldown
     
     net.Start("gRust.OpenTechTree")
     net.WriteEntity(ent)

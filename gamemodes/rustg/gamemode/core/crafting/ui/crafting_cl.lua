@@ -5,27 +5,22 @@ local DivMargin = bit.band((ScrH() * 0.0035) + 1, -2)
 local DivMargin2 = bit.band((ScrH() * 0.006) + 1, -2)
 local Width = ScrW() - LeftMargin - RightMargin
 local Height = ScrH() - TopMargin - BottomMargin
-
-
-gRust.ScalingInfluence = 0.0    
+gRust.ScalingInfluence = 0.0
 gRust.Scaling = (ScrH() / 1440) * gRust.ScalingInfluence + (1 - gRust.ScalingInfluence) * ScrW() / 2560
-
 local QueueButtons = {}
 local CraftAmount = 1
 local SelectedItem = "rock"
 local SelectedCategory = "Items"
 local SelectedSkin = ""
-
 local FavoriteColor = Color(255, 215, 0, 255)
 local plyMeta = FindMetaTable("Player")
-
 local BackgroundMaterial = Material("materials/ui/background.png")
 
 surface.CreateFont("gRust.Crafting.Description", {
-    font = "Roboto Condensed",
-    size = 32 * gRust.Scaling,
-    weight = 500,
-    antialias = true
+	font = "Roboto Condensed",
+	size = 32 * gRust.Scaling,
+	weight = 500,
+	antialias = true
 })
 
 local function InventoryButton()
@@ -50,11 +45,9 @@ local function InventoryButton()
 end
 
 function PaintBackground(me, w, h)
-
 	surface.SetMaterial(BackgroundMaterial)
 	surface.SetDrawColor(126, 126, 126, 39)
 	surface.DrawTexturedRect(0, 0, w, h)
-
 	surface.SetDrawColor(175, 175, 175, 0)
 	surface.DrawRect(0, 0, w, h)
 end
@@ -62,62 +55,50 @@ end
 local ImagePadding = Height * 0.015
 
 function AddQueueItem(id, time, index)
-	local CraftQueue = gRust.CraftingMenu and gRust.CraftingMenu:GetChildren()[1]:GetChildren()[1]
+	local CraftQueue = gRust.CraftingMenu and gRust.CraftingMenu:GetChildren()[1]:GetChildren()[4]
 	if not IsValid(CraftQueue) then return end
-	
 	local QueuePadding = DivMargin2 * 2
 	local XPadding = QueuePadding * 2
-	
 	local item = CraftQueue:Add("DButton")
 	item:Dock(RIGHT)
 	item:SetWide(CraftQueue:GetTall() - QueuePadding * 2)
 	item:SetText("")
-
 	local ProgressCircle = Circles.New(CIRCLE_FILLED, 200, 100, 100)
 	ProgressCircle:SetRotation(90)
-
 	item.Paint = function(me, w, h)
 		surface.SetMaterial(Material(id:GetIcon(), "smooth"))
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawTexturedRect(0, 0, w, h)
-
 		if (me:IsHovered()) then
 			surface.SetDrawColor(255, 86, 35)
 			surface.SetMaterial(gRust.GetIcon("x"))
 			surface.DrawTexturedRect(XPadding * 0.5, XPadding * 0.5, w - XPadding, h - XPadding)
 		end
-
 		local x, y = me:GetPos()
-		surface.SetDrawColor(133, 228 ,70)
+		surface.SetDrawColor(133, 228, 70)
 		draw.NoTexture()
-		
 		ProgressCircle:SetRadius(h * 0.15)
 		ProgressCircle:SetStartAngle(((CurTime() - time) / id:GetCraftTime()) * 360)
 		ProgressCircle:SetPos(w * 0.75, h * 0.75)
 		ProgressCircle()
 	end
-
 	item.DoClick = function(me)
 		if gRust.RemoveCraftNotifications then
 			gRust.RemoveCraftNotifications()
 		end
-		
 		net.Start("gRust.CraftRemove")
-			net.WriteUInt(index, 6)
+		net.WriteUInt(index, 6)
 		net.SendToServer()
 	end
-	
 	return item
 end
 
 local function LeftPanel()
 	local Frame = gRust.CraftingMenu
-
 	local Panel = Frame:Add("Panel")
 	Panel:Dock(LEFT)
 	Panel:SetWide((gRust.CraftingMenu:GetWide() - LeftMargin - RightMargin) * 0.5)
 	Panel:DockMargin(0, 0, DivMargin * 0.5, 0)
-
 	local QueuePadding = DivMargin2 * 2
 	local CraftQueue = Panel:Add("DPanel")
 	CraftQueue:Dock(BOTTOM)
@@ -133,10 +114,8 @@ local function LeftPanel()
 		local cls = net.ReadString()
 		local index = net.ReadUInt(6)
 		local craftTime = net.ReadFloat()
-		
 		gRust.CraftQueue = gRust.CraftQueue or {}
 		gRust.CraftQueue[index] = {item = cls, time = CurTime(), craftTime = craftTime}
-		
 		if IsValid(gRust.CraftingMenu) then
 			QueueButtons[index] = AddQueueItem(gRust.Items[cls], CurTime(), index)
 		end
@@ -144,11 +123,9 @@ local function LeftPanel()
 
 	net.Receive("gRust.CraftRemove", function()
 		local index = net.ReadUInt(6)
-		
 		if gRust.RemoveCraftNotifications then
 			gRust.RemoveCraftNotifications()
 		end
-		
 		if gRust.CraftQueue then
 			gRust.CraftQueue[index] = nil
 		end
@@ -162,7 +139,6 @@ local function LeftPanel()
 		local index = net.ReadUInt(6)
 		local item = net.ReadString()
 		local amount = net.ReadUInt(7)
-		
 		if gRust.CraftQueue then
 			gRust.CraftQueue[index] = nil
 		end
@@ -196,47 +172,37 @@ local function LeftPanel()
 	if (vgui.GetControlTable("gRust.Input")) then
 		SearchBar:SetPlaceholder("Search...")
 		SearchBar:SetFont("gRust.42px")
-		
 		SearchBar.Paint = function(me, w, h)
 			surface.SetDrawColor(255, 255, 255, 15)
 			surface.DrawRect(0, 0, w, h)
-			
 			me:DrawTextEntryText(color_white, Color(92, 192, 192), color_white)
 		end
-		
 		SearchBar.OnPressed = function(me)
 			gRust.CraftingMenu:MakePopup()
 		end
 		SearchBar.OnReleased = function(me)
 			gRust.CraftingMenu:SetKeyboardInputEnabled(false)
 		end
-	
 		SearchBar.OnTextChanged = function(me, txt)
 			txt = string.lower(txt)
 			if (txt == "") then
 				gRust.CraftingMenu.OpenCategory(SelectedCategory)
 				return
 			end
-		
 			local items = {}
 			for k, v in pairs(gRust.Items) do
 				if (!v:GetCraft()) then continue end
-
+				if not v:GetVisible() then continue end
 				if v:GetBlueprint() and not LocalPlayer():HasBlueprint(v:GetClass()) then
 					continue
 				end
-				
 				if (util.FuzzySearch(string.lower(v:GetName()), txt)) then
 					items[#items + 1] = v
 				end
 			end
-		
 			gRust.CraftingMenu.LoadItems(items)
 		end
-		
-		
 	end
-
 	SearchBar:Dock(BOTTOM)
 	SearchBar:SetTall(Height * 0.0625)
 
@@ -250,7 +216,6 @@ local function LeftPanel()
 		if (IsValid(Items)) then
 			Items:Remove()
 		end
-
 		local ItemMargin = Height * 0.025
 		Items = ItemPanel:Add("gRust.Grid")
 		Items:Dock(FILL)
@@ -259,11 +224,9 @@ local function LeftPanel()
 		Items:DockMargin(ItemMargin, ItemMargin, ItemMargin, ItemMargin)
 		Items:InvalidateLayout(true)
 		Items:Think()
-
 		for k, v in ipairs(items) do
 			items[k] = v
 		end
-
 		local sorted = {}
 		for i = 1, #items do
 			local item = items[i]
@@ -274,68 +237,55 @@ local function LeftPanel()
 		end
 		for i = 1, #items do
 			local item = items[i]
-			if (LocalPlayer():CanCraft(item) && gRust.IsFavorited(item)) then
+			if (LocalPlayer():CanCraft(item) and gRust.IsFavorited(item)) then
 				table.remove(items, i)
 				table.insert(items, 1, item)
 			end
 		end
-
 		for k, v in ipairs(items) do
+			if not v:GetVisible() then continue end
 			local item = Items:Add("DButton")
 			local favorite = item:Add("DButton")
 			favorite:SetWide(Height * 0.025)
 			favorite:SetTall(Height * 0.025)
 			favorite:SetPos(Height * 0.005, Height * 0.005)
 			favorite.Paint = function(me, w, h)
-				if (item:IsHovered() || me:IsHovered() || gRust.IsFavorited(v)) then
-					surface.SetMaterial(gRust.GetIcon((me:IsHovered() || gRust.IsFavorited(v)) and "favorite_active" or "favorite_inactive"))
-					surface.SetDrawColor((LocalPlayer():CanCraft(v) || me:IsHovered()) and FavoriteColor or ColorAlpha(FavoriteColor, 50))
+				if (item:IsHovered() or me:IsHovered() or gRust.IsFavorited(v)) then
+					surface.SetMaterial(gRust.GetIcon((me:IsHovered() or gRust.IsFavorited(v)) and "favorite_active" or "favorite_inactive"))
+					surface.SetDrawColor((LocalPlayer():CanCraft(v) or me:IsHovered()) and FavoriteColor or ColorAlpha(FavoriteColor, 50))
 					surface.DrawTexturedRect(0, 0, w, h)
 				end
-
 				return true
 			end
-			favorite.DoClick = function()
-			end
-			
+			favorite.DoClick = function() end
 			item.DoClick = function()
 				Frame.SelectItem(v)
 			end
-			
 			item.DoDoubleClick = function(me)
 				gRust.RequestCraft(v:GetClass(), CraftAmount, SelectedSkin)
 			end
-			
-
 			local LockPadding = Height * 0.02
 			item.Paint = function(me, w, h)
-				if (me:IsHovered() || favorite:IsHovered()) then
-					
+				if (me:IsHovered() or favorite:IsHovered()) then
 					if (me:IsDown()) then
 						surface.SetDrawColor(200, 200, 200, 50)
 					else
 						surface.SetDrawColor(200, 200, 200, 25)
 					end
-			
 					surface.DrawRect(0, 0, w, h)
 				end
-
-			
 				if (LocalPlayer():CanCraft(v)) then
 					surface.SetDrawColor(255, 255, 255)
 				else
 					surface.SetDrawColor(255, 255, 255, 100)
 				end
-			
 				surface.SetMaterial(Material(v:GetIcon(), "smooth"))
 				surface.DrawTexturedRect(0, 0, w, h)
-
-				if (v:GetBlueprint() and !LocalPlayer():HasBlueprint(v:GetClass())) then
+				if (v:GetBlueprint() and not LocalPlayer():HasBlueprint(v:GetClass())) then
 					surface.SetDrawColor(255, 255, 255, 150)
 					surface.SetMaterial(gRust.GetIcon("lock"))
 					surface.DrawTexturedRect(LockPadding * 0.5, LockPadding * 0.5, w - LockPadding, h - LockPadding)
 				end
-			
 				return true
 			end
 		end
@@ -343,18 +293,17 @@ local function LeftPanel()
 
 	gRust.CraftingMenu.OpenCategory = function(catName)
 		SelectedCategory = catName
-	
 		local filtered = {}
 		for _, item in ipairs(gRust.CategoryItems[catName]) do
+			if not item:GetVisible() then continue end
 			if item:GetBlueprint() and not LocalPlayer():HasBlueprint(item:GetClass()) then
 			else
 				filtered[#filtered + 1] = item
 			end
 		end
-	
 		gRust.CraftingMenu.LoadItems(filtered)
 	end
-	
+
 	Frame.OpenCategory(SelectedCategory)
 
 	for k, v in ipairs(gRust.Categories) do
@@ -362,15 +311,12 @@ local function LeftPanel()
 		btn:Dock(TOP)
 		btn:SetTall(Height * 0.0625)
 		btn:SetText("")
-		btn.Paint = function()
-			return true
-		end
+		btn.Paint = function() return true end
 		btn.DoClick = function()
 			if (SelectedCategory == v.name) then return end
 			Frame.OpenCategory(v.name)
 			LocalPlayer():EmitSound("ui.piemenu.select")
 		end
-
 		local col = Color(145, 145, 145, 255)
 		local img = btn:Add("DImage")
 		img:SetImage(v.icon)
@@ -379,14 +325,13 @@ local function LeftPanel()
 		img.SetColor = img.SetImageColor
 		img.GetColor = img.GetImageColor
 		img:SetImageColor(ColorAlpha(col, 35))
-
 		local txt = btn:Add("DLabel")
 		txt:SetFont("gRust.30px")
 		txt:Dock(FILL)
 		txt:SetColor(col)
 		txt:SetText(string.upper(v.name))
 		btn.Think = function(me)
-			if (SelectedCategory == v.name && !me.Selected) then
+			if (SelectedCategory == v.name and not me.Selected) then
 				txt:SetColor(Color(200, 200, 200, 255))
 				img:SetColor(Color(175, 175, 175, 175))
 				me.Selected = true
@@ -400,7 +345,7 @@ local function LeftPanel()
 		local out = Height * 0.015
 		btn.Paint = function(me, w, h)
 			if (SelectedCategory == v.name) then
-				if (!me.SelectedCat) then
+				if (not me.SelectedCat) then
 					me.SelectedCat = true
 					me.SelectTime = CurTime()
 				end
@@ -410,23 +355,19 @@ local function LeftPanel()
 					me.DeselectTime = CurTime()
 				end
 			end
-
 			surface.SetDrawColor(41, 141, 255, 100)
-
 			if (SelectedCategory == v.name) then
 				surface.DrawRect(-out * 0.5, -out * 0.5, (w + out) * Lerp((CurTime() - (me.SelectTime or 0)) / 0.075, 0, 1), h + out)
 			else
 				surface.DrawRect(-out * 0.5, -out * 0.5, (w + out) * Lerp((CurTime() - (me.DeselectTime or 0)) / 0.075, 1, 0), h + out)
 			end
 		end
-
 		local learnedCount = 0
 		for _, item in ipairs(gRust.CategoryItems[v.name]) do
 			if not item:GetBlueprint() or LocalPlayer():HasBlueprint(item:GetClass()) then
 				learnedCount = learnedCount + 1
 			end
 		end
-		
 		local amt = btn:Add("DLabel")
 		amt:SetFont("gRust.30px")
 		amt:Dock(RIGHT)
@@ -435,7 +376,6 @@ local function LeftPanel()
 		amt:DockMargin(0, 0, DivMargin2, 0)
 		amt:SetContentAlignment(6)
 		amt:SetWide(32)
-
 		btn.PerformLayout = function(me, w, h)
 			img:SetWide(h - ImagePadding * 2)
 		end
@@ -783,16 +723,12 @@ local MoveTime = 0.125
 
 function gRust.OpenCrafting()
 	if (IsValid(gRust.CraftingMenu)) then return end
-
 	if (IsValid(gRust.Inventory)) then
 		gRust.CloseInventory()
 	end
-
 	gRust.CraftQueue = gRust.CraftQueue or {}
 	QueueButtons = {}
-
 	local scrw, scrh = ScrW(), ScrH()
-
 	local Frame = vgui.Create("EditablePanel")
 	Frame:SetPopupStayAtBack(true)
 	Frame:SetSize(scrw, scrh)
@@ -801,27 +737,19 @@ function gRust.OpenCrafting()
 	Frame:DockPadding(LeftMargin, TopMargin, RightMargin, BottomMargin)
 	Frame:AlphaTo(255, MoveTime, 0)
 	Frame:MoveTo(0, 0, MoveTime, 0, 0.5)
-	
 	Frame.Paint = function(me, w, h)
-
 		surface.SetMaterial(BackgroundMaterial)
 		surface.SetDrawColor(0, 0, 0, 100)
 		surface.DrawTexturedRect(0, 0, w, h)
-
-
 		surface.SetDrawColor(26, 25, 22, 150)
 		surface.DrawRect(0, 0, w, h)
-		
 		me:DrawBlur(4)
 	end
-
 	gui.EnableScreenClicker(true)
 	gRust.CraftingMenu = Frame
-
 	LeftPanel()
 	RightPanel()
 	InventoryButton()
-
 	timer.Simple(0.1, function()
 		if IsValid(gRust.CraftingMenu) then
 			for index, craft in pairs(gRust.CraftQueue) do
@@ -835,8 +763,7 @@ end
 
 function gRust.CloseCrafting()
 	local Frame = gRust.CraftingMenu
-	if (!IsValid(Frame)) then return end
-
+	if (not IsValid(Frame)) then return end
 	gui.EnableScreenClicker(false)
 	Frame:AlphaTo(0, MoveTime, 0)
 	Frame:MoveTo(InitialPos, 0, MoveTime, 0, 0.5, function()

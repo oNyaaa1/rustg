@@ -43,54 +43,57 @@ local BarIndex = 1
 
 local function DrawBar(val, min, max, icon, col)
 
-	val = math_Clamp(val, min, max)
+    val = math_Clamp(val, min, max)
 
 
 
-	local scrw, scrh = ScrW(), ScrH()
+    local scrw, scrh = ScrW(), ScrH()
 
-	local Spacing = scrh * 0.001
+    local Spacing = scrh * 0.001
 
-	local Padding = scrh * 0.00475
+    local Padding = scrh * 0.00475
 
-	local IconPadding = scrh * 0.0055
-
-
-
-	local Width, Height = scrh * 0.266, (scrh * 0.1125 - Spacing) / 3
-
-	local Margin = scrh * 0.0225
+    local IconPadding = scrh * 0.0055
 
 
 
-	local x, y = scrw - Margin - Width, scrh - Margin - Height * BarIndex - Spacing * BarIndex + Spacing * 2
+    local Width, Height = scrh * 0.266, (scrh * 0.1125 - Spacing) / 3
+
+    local Margin = scrh * 0.0225
 
 
 
-	surface_SetDrawColor(255, 255, 255, 4)
-
-	surface_DrawRect(x, y, Width, Height - Spacing)
-
-	
-
-	surface_SetDrawColor(160, 152, 140, 255)
-
-	surface_SetMaterial(icon)
-
-	surface_DrawTexturedRect(x + IconPadding, y + IconPadding, Height - IconPadding * 2, Height - IconPadding * 2)
+    local x, y = scrw - Margin - Width, scrh - Margin - Height * BarIndex - Spacing * BarIndex + Spacing * 2
 
 
 
-	surface_SetDrawColor(col)
+    surface_SetDrawColor(255, 255, 255, 4)
 
-	surface_DrawRect(x + Height - Spacing, y + Padding, ((Width - Height - Padding) * (val / max)), Height - Padding * 2)
+    surface_DrawRect(x, y, Width, Height - Spacing)
 
-    draw_SimpleText(val, "gRust.32px", x + Height + Margin + 1, y + Height * 0.5 + 2, Color(0, 0, 0, 200), 1, 1)
+    
 
-    draw_SimpleText(val, "gRust.32px", x + Height + Margin, y + Height * 0.5, Color(255, 255, 255, 165), 1, 1)
+    surface_SetDrawColor(160, 152, 140, 255)
+
+    surface_SetMaterial(icon)
+
+    surface_DrawTexturedRect(x + IconPadding, y + IconPadding, Height - IconPadding * 2, Height - IconPadding * 2)
 
 
-	BarIndex = BarIndex + 1
+
+    surface_SetDrawColor(col)
+
+    surface_DrawRect(x + Height - Spacing, y + Padding, ((Width - Height - Padding) * (val / max)), Height - Padding * 2)
+
+    local fh = 28 * (ScrH() / 1080)
+
+    draw_SimpleText(val, "gRust.32px",x + Height + Margin + 1,y + Height * 0.5 - fh * 0.5 + 2,Color(0, 0, 0, 200), 1, 0)
+    
+    draw_SimpleText(val, "gRust.32px",x + Height + Margin,y + Height * 0.5 - fh * 0.5,Color(255, 255, 255, 165), 1, 0)
+    
+
+
+    BarIndex = BarIndex + 1
 
 end
 

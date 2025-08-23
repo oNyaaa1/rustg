@@ -195,27 +195,19 @@ function PANEL:Paint(w, h)
 
 
 	local Locked = self:GetLocked()
-
-	if (self:GetItem()) then
-
+	if self:GetItem() then
 		local Padding = self:GetTall() * 0.125
-
 		local ID = gRust.Items[self:GetItem()]
-
+		
+		if not ID then return end -- Safety check for missing items
+		
 		surface.SetMaterial(Material(ID:GetIcon(), "smooth"))
-
-		if (Locked) then
-
+		if Locked then
 			surface.SetDrawColor(255, 255, 255, 10)
-
 		else
-
 			surface.SetDrawColor(255, 255, 255)
-
 		end
-
 		surface.DrawTexturedRect(Padding, Padding, w - Padding * 2, h - Padding * 2)
-
 	end
 
 

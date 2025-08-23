@@ -116,21 +116,15 @@ function PANEL:Init()
 		Scrap:SetText(gRust.TechTree[self.SelectedItem])
 
 	end
-
 	local OldScrapPaint = Scrap.Paint
-
 	local ScrapPadding = scrh * 0.0035
-
 	Scrap.Paint = function(me, w, h)
-
-		OldScrapPaint(me, w, h)
-
+		if OldScrapPaint then
+			OldScrapPaint(me, w, h)
+		end
 		surface.SetDrawColor(255, 255, 255)
-
 		surface.SetMaterial(Material(gRust.Items["scrap"]:GetIcon(), "smooth mips"))
-
 		surface.DrawTexturedRect(ScrapPadding, ScrapPadding, h - ScrapPadding * 2, h - ScrapPadding * 2)
-
 	end
 
 
