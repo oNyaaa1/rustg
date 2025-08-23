@@ -16,7 +16,7 @@ SWEP.DownPos            = Vector(-0, 0, -3)
 
 
 
-SWEP.Damage             = 1500000
+SWEP.Damage             = 15
 
 
 
