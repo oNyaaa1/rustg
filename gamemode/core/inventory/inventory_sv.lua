@@ -543,8 +543,7 @@ function HandleMoveSlot(len, pl)
             end
         end
     end
-
-    hook.Run("gRust.ItemMoved", pl, oldSlot, newSlot)
+    hook.Run("gRust.ItemMoved", pl, fromEnt, toEnt, oldSlot, newSlot)
 end
 
 function HandleItemDrop(len, pl)
