@@ -549,103 +549,70 @@ function PLAYER:GetItemCount(itemClass)
     return total
 end
 
--- ИСПРАВЛЕННАЯ ФУНКЦИЯ ОБРАБОТКИ ПЕРЕМЕЩЕНИЯ
-function HandleMoveSlot(len, pl)
-    local fromEnt = net.ReadEntity()
-    local toEnt = net.ReadEntity()
-    local oldSlot = net.ReadUInt(6)
-    local newSlot = net.ReadUInt(6)
-    local amount = net.ReadUInt(20)
+function HandleMoveSlot(_, pl)
+    local fromEnt  = net.ReadEntity()
+    local toEnt    = net.ReadEntity()
+    local oldSlot  = net.ReadUInt(6)
+    local newSlot  = net.ReadUInt(6)
+    local amount   = net.ReadUInt(20)
 
-    if not IsValid(fromEnt) or not IsValid(toEnt) then return end
-    if not fromEnt.Inventory or not toEnt.Inventory then return end
-    if oldSlot < 1 or newSlot < 1 then return end
-    if oldSlot > fromEnt.InventorySlots or newSlot > toEnt.InventorySlots then return end
-    if not pl:Alive() then return end
+    if not (IsValid(pl) and pl:Alive()) then return end
+    if not (IsValid(fromEnt) and IsValid(toEnt)) then return end
+    if not (fromEnt.Inventory and toEnt.Inventory) then return end
+    if oldSlot < 1 or newSlot < 1 or oldSlot > fromEnt.InventorySlots or newSlot > toEnt.InventorySlots then return end
+    if amount == 0 then return end
 
     local fromItem = fromEnt.Inventory[oldSlot]
     if not fromItem then return end
-
-    if fromEnt ~= pl and fromEnt:GetPos():Distance(pl:GetPos()) > 200 then return end
-    if toEnt ~= pl and toEnt:GetPos():Distance(pl:GetPos()) > 200 then return end
-
-    if fromEnt:IsPlayer() and fromEnt ~= pl then
-        pl:Freeze(true)
-        pl:ChatPrint("ИДИ НАХУЙ ПИДОР Я ВСЁ ПОФИКСИЛ")
-        return
-    end
-
-    if toEnt:IsPlayer() and toEnt ~= pl then
-        pl:Freeze(true)
-        pl:ChatPrint("ИДИ НАХУЙ ПИДОР Я ВСЁ ПОФИКСИЛ")
-        return
-    end
-
     if not toEnt:CanPlaceInSlot(newSlot, fromItem) then return end
 
-    local toItem = toEnt.Inventory[newSlot]
     amount = math.min(amount, fromItem:GetQuantity())
-
-    local isClothingSlot = toEnt:IsPlayer() and newSlot >= 31 and newSlot <= 36
-    local wasClothingSlot = fromEnt:IsPlayer() and oldSlot >= 31 and oldSlot <= 36
+    local toItem = toEnt.Inventory[newSlot]
 
     if toItem then
         if toItem:CanStack(fromItem) and toItem:CanAddQuantity(amount) then
             toItem:AddQuantity(amount)
             fromItem:RemoveQuantity(amount)
-
             if fromItem:GetQuantity() <= 0 then
                 fromEnt:RemoveSlot(oldSlot)
-                if wasClothingSlot and fromEnt:IsPlayer() then fromEnt:RemoveClothing(oldSlot) end
             else
                 fromEnt:SyncSlot(oldSlot)
             end
-
             toEnt:SyncSlot(newSlot)
         else
-            if not fromEnt:CanPlaceInSlot(oldSlot, toItem) then return end
-
-            fromEnt:SetSlot(toItem, oldSlot)
-            toEnt:SetSlot(fromItem, newSlot)
-
-            if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(fromItem, newSlot) end
-            if wasClothingSlot and fromEnt:IsPlayer() then
-                if toItem and fromEnt:IsClothingItem(toItem) then
-                    fromEnt:ApplyClothing(toItem, oldSlot)
-                else
-                    fromEnt:RemoveClothing(oldSlot)
-                end
-            end
+            fromEnt.Inventory[oldSlot] = toItem
+            toEnt.Inventory[newSlot] = fromItem
+            fromEnt:SyncSlot(oldSlot)
+            toEnt:SyncSlot(newSlot)
         end
     else
         if amount >= fromItem:GetQuantity() then
-            toEnt:SetSlot(fromItem, newSlot)
+            toEnt.Inventory[newSlot] = fromItem
             fromEnt:RemoveSlot(oldSlot)
-
-            if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(fromItem, newSlot) end
-            if wasClothingSlot and fromEnt:IsPlayer() then fromEnt:RemoveClothing(oldSlot) end
+            toEnt:SyncSlot(newSlot)
         else
-            local newItem = fromItem:Split(amount)
-            if newItem then
-                toEnt:SetSlot(newItem, newSlot)
-                fromEnt:SyncSlot(oldSlot)
-
-                if isClothingSlot and toEnt:IsPlayer() then toEnt:ApplyClothing(newItem, newSlot) end
-            end
+            local split = fromItem:Split(amount)
+            if not split then return end
+            toEnt.Inventory[newSlot] = split
+            fromEnt:SyncSlot(oldSlot)
+            toEnt:SyncSlot(newSlot)
         end
     end
 
-    -- ДОПОЛНИТЕЛЬНАЯ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ДЛЯ КОНТЕЙНЕРОВ
-    timer.Simple(0, function()
-        if IsValid(toEnt) and not toEnt:IsPlayer() then
-            toEnt:SyncSlot(newSlot)
+    if fromEnt:IsPlayer() and oldSlot >= 31 and oldSlot <= 36 then
+        if fromEnt.Inventory[oldSlot] and fromEnt:IsClothingItem(fromEnt.Inventory[oldSlot]) then
+            fromEnt:ApplyClothing(fromEnt.Inventory[oldSlot], oldSlot)
+        else
+            fromEnt:RemoveClothing(oldSlot)
         end
-        if IsValid(fromEnt) and not fromEnt:IsPlayer() then
-            fromEnt:SyncSlot(oldSlot)
+    end
+    if toEnt:IsPlayer() and newSlot >= 31 and newSlot <= 36 then
+        if toEnt:IsClothingItem(toEnt.Inventory[newSlot]) then
+            toEnt:ApplyClothing(toEnt.Inventory[newSlot], newSlot)
         end
-    end)
+    end
 
-    hook.Run("gRust.ItemMoved", pl, oldSlot, newSlot)
+    hook.Run("gRust.ItemMoved", pl, fromEnt, toEnt, oldSlot, newSlot)
 end
 
 function HandleItemDrop(len, pl)
