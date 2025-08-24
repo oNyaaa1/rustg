@@ -3,7 +3,7 @@ AddCSLuaFile("config.lua")
 include("shared.lua")
 include("config.lua")
 AddCSLuaFile("lang/cl_english.lua")
-include("lang/sv_english.lua")
+include("lang/cl_english.lua")
 
 util.AddNetworkString("gRust.ServerConfig")
 local oldnets = net.Start

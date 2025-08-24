@@ -1,5 +1,5 @@
 include("shared.lua")
-include("lang/sv_english.lua")
+include("lang/cl_english.lua")
 
 do
 	RunConsoleCommand("cl_interp", 0)
