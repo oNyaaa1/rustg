@@ -6,7 +6,7 @@ local function StripInvWeapons(pl)
     end
 end
 
-function        
+function GiveHands(pl)  
     pl:Give("rust_hands")
     pl:SelectWeapon("rust_hands")
 end
