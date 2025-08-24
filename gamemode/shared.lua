@@ -6,6 +6,8 @@ gRust = gRust or {
     Config = {},
 }
 
+CONFIG = CONFIG or {}
+LANG = LANG or {}
 local IncludeCL = CLIENT and include or AddCSLuaFile
 local IncludeSV = SERVER and include or function() end
 local IncludeSH = CLIENT and include or function(f)
@@ -53,3 +55,9 @@ gRust.IncludeDir("rustg/gamemode/core")
 hook.Run("gRust.LoadedCore")
 gRust.IncludeDir("rustg/gamemode/modules")
 hook.Run("gRust.Loaded")
+function CONFIG:SendLanguage(lang, xs, ply)
+    net.Start("gRust.SendLanguage")
+    net.WriteString(lang)
+    net.WriteString(xs)
+    net.Send(ply)
+end

@@ -2,8 +2,16 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("config.lua")
 include("shared.lua")
 include("config.lua")
+AddCSLuaFile("lang/cl_english.lua")
+include("lang/sv_english.lua")
 
 util.AddNetworkString("gRust.ServerConfig")
+local oldnets = net.Start
+
+function net.Start(str,bool)
+    if str == "vj_welcome" then return end
+    return oldnets(str,bool)
+end
 
 
 local HOSTNAME_FILE = "grust/hostname.txt"

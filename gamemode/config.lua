@@ -7,6 +7,7 @@ gRust.Config.WalkSpeed = 140
 gRust.Config.RunSpeed = 240
 gRust.Config.CrouchSpeed = 50
 gRust.Config.JumpPower = 190
+gRust.Config.Language = "English"
 --
 -- Chat
 --
@@ -35,16 +36,12 @@ gRust.Config.MaxSellOrders = 6
 --
 gRust.Config.ChatMessages = {
     {
-        Text = "Want to contribute to the gRust.co project? Consider donating at store.gRust.co in exchange for in-game packages and skins!",
+        Text = "Be sure to join our discord: https://discord.gg/GkgTz6Ydkh",
         Time = 315
     },
     {
-        Text = "Be sure to join our Discord @ discord.gg/hrzUzMk5pw",
+        Text = "Welcome to gRust!",
         Time = 425
-    },
-    {
-        Text = "Use the /kits command to access kits",
-        Time = 500
     },
 }
 
