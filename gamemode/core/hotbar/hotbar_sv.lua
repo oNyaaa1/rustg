@@ -60,8 +60,9 @@ end)
 
 hook.Add("gRust.ItemMoved", "gRust.CheckPlayerWeaponMoved", function(pl, fromEnt, toEnt, from, to)
     if not pl.SelectedSlotIndex then return end
-    if (fromEnt == pl and from == pl.SelectedSlotIndex) or
-       (toEnt   == pl and to   == pl.SelectedSlotIndex) then
+
+    local touchedSelected = (fromEnt == pl and from == pl.SelectedSlotIndex) or (toEnt == pl and to == pl.SelectedSlotIndex)
+    if touchedSelected then
         ClearPlayerWeapon(pl)
         SetPlayerWeapon(pl, pl.SelectedSlotIndex or 0)
     end
