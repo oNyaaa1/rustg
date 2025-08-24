@@ -16,6 +16,6 @@ gRust.Colors.Blue       = Color(0, 76, 152)
 
 gRust.Colors.Panel      = Color(42, 42, 34)
 
-gRust.Colors.Text       = Color(231, 219, 210, 255)
+gRust.Colors.Text       = Color(255, 255, 255)
 
-gRust.Colors.Text2      = Color(215, 205, 195, 255)
+gRust.Colors.Text2      = Color(255, 255, 255)
