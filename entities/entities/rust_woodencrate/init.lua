@@ -42,7 +42,7 @@ function ENT:Initialize()
         end
     end)
 end
-
+ 
 function ENT:PopulateWithItems()
     local woodenCrateLootItems = {
         { itemid = "wood", amount = {50, 150}, chance = 0.8 },
