@@ -616,107 +616,54 @@ end
 
 -- HOOKS
 hook.Add("PlayerDisconnected", "gRust.Inventory.PlayerDisconnect", function(pl)
-    if pl.Inventory then
-        local hasItems = false
-        for i = 1, 36 do
-            if pl.Inventory[i] then
-                hasItems = true
-                break
-            end
+    if not pl.Inventory then return end
+
+    local hasItems = false
+    for i = 1, 36 do
+        if pl.Inventory[i] then
+            hasItems = true
+            break
         end
-
-        if hasItems then
-            local playerData = {
-                steamID = pl:SteamID(),
-                name = pl:Nick(),
-                pos = pl:GetPos(),
-                inventory = {}
-            }
-
-            for i = 1, 36 do
-                if pl.Inventory[i] then playerData.inventory[i] = pl.Inventory[i] end
-            end
-
-            local lootEnt = ents.Create("rust_sleepingplayer")
-            if IsValid(lootEnt) then
-                lootEnt:SetPos(playerData.pos + Vector(0, 0, 10))
-                lootEnt:SetAngles(Angle(0, math.random(0, 360), 0))
-                lootEnt:Spawn()
-                lootEnt.OwnerSteamID = playerData.steamID
-                lootEnt.OwnerName = playerData.name
-                lootEnt:SetNWString("OwnerSteamID", lootEnt.OwnerSteamID)
-                lootEnt:SetNWString("OwnerName", lootEnt.OwnerName)
-                local itemCount = 0
-                for i = 1, 36 do
-                    if playerData.inventory[i] then
-                        lootEnt:SetSlot(playerData.inventory[i], i)
-                        itemCount = itemCount + 1
-                    end
-                end
-            end
-        end
-
-        pl.Inventory = {}
     end
+    if not hasItems then return end
+
+    local lootEnt = ents.Create("rust_sleepingplayer")
+    if not IsValid(lootEnt) then return end
+
+    lootEnt:SetPos(pl:GetPos() + Vector(0, 0, 10))
+    lootEnt:SetAngles(Angle(0, math.random(0, 360), 0))
+    lootEnt:Spawn()
+
+    lootEnt.OwnerSteamID = pl:SteamID()
+    lootEnt.OwnerName = pl:Nick()
+    lootEnt:SetNWString("OwnerSteamID", lootEnt.OwnerSteamID)
+    lootEnt:SetNWString("OwnerName", lootEnt.OwnerName)
+
+    for i = 1, 36 do
+        if pl.Inventory[i] then
+            lootEnt:SetSlot(pl.Inventory[i], i)
+        end
+    end
+
+    pl.Inventory = {}
 end)
 
 hook.Add("PlayerDeath", "gRust.Inventory.PlayerDeath", function(pl)
-    if pl.Inventory then
-        local hasItems = false
-        for i = 1, 36 do
-            if pl.Inventory[i] then
-                hasItems = true
-                break
-            end
+    pl.Inventory = {}
+    pl.EquippedAttire = {}
+    pl:SetModel("models/player/Group01/Male_01.mdl")
+    pl.ArmorHead = nil
+    pl.ArmorBody = nil
+    pl.ArmorArms = nil
+    pl.ArmorLegs = nil
+
+    timer.Simple(0, function()
+        if IsValid(pl) then
+            pl:SyncInventory()
+            pl:GiveItem("rock", 1)
         end
-
-        if hasItems then
-            local playerData = {
-                steamID = pl:SteamID(),
-                name = pl:Nick(),
-                pos = pl:GetPos(),
-                inventory = {}
-            }
-
-            for i = 1, 36 do
-                if pl.Inventory[i] then playerData.inventory[i] = pl.Inventory[i] end
-            end
-
-            local lootEnt = ents.Create("rust_sleepingplayer")
-            if IsValid(lootEnt) then
-                lootEnt:SetPos(playerData.pos + Vector(0, 0, 10))
-                lootEnt:SetAngles(Angle(0, math.random(0, 360), 0))
-                lootEnt:Spawn()
-                lootEnt.OwnerSteamID = playerData.steamID
-                lootEnt.OwnerName = playerData.name
-                lootEnt:SetNWString("OwnerSteamID", lootEnt.OwnerSteamID)
-                lootEnt:SetNWString("OwnerName", lootEnt.OwnerName)
-                local itemCount = 0
-                for i = 1, 36 do
-                    if playerData.inventory[i] then
-                        lootEnt:SetSlot(playerData.inventory[i], i)
-                        itemCount = itemCount + 1
-                    end
-                end
-            end
-        end
-
-        pl.Inventory = {}
-        pl.EquippedAttire = {}
-        pl:SetModel("models/player/Group01/Male_01.mdl")
-        pl.ArmorHead = nil
-        pl.ArmorBody = nil
-        pl.ArmorArms = nil
-        pl.ArmorLegs = nil
-        timer.Simple(0, function()
-            if IsValid(pl) then
-                pl:SyncInventory()
-                pl:GiveItem("rock", 1)
-            end
-        end)
-    end
+    end)
 end)
-
 function FindPlayerSleepingBag(player)
     local steamID = player:SteamID()
     for _, ent in pairs(ents.FindByClass("rust_sleepingplayer")) do
