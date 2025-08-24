@@ -10,7 +10,7 @@ surface.CreateFont("gRust.ItemDescription", {
 function PANEL:Init()
     self:NoClipping(true)
 	self:Dock(BOTTOM)
-	self:SetTall(ScrH() * 0.360)
+	self:SetTall(ScrH() * 0.365)
 	self:DockMargin(0, 0, 0, ScrH() * 0.01)
 end
 
