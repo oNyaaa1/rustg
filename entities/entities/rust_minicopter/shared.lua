@@ -1141,281 +1141,34 @@ if SERVER then
 
 
 
-    function ENT:ProcessDamage()
-
+      function ENT:ProcessDamage()
         if self.health <= 0 then
-
-            -- Defer StopMotionController to avoid physics callback error
             timer.Simple(0, function()
                 if IsValid(self) then
                     self:StopMotionController()
                 end
             end)
-
-            -- Defer CreateGibs to avoid physics callback error
-            timer.Simple(0, function()
-                if IsValid(self) then
-                    self:CreateGibs()
-                end
-            end)
-
-
-
             if self.fuel > 0 then
-
-                util.BlastDamage(self, self.driver or self or game.GetWorld(), self:GetPos(), 350, 100)
-
+                util.BlastDamage(self, self.driver or self or game.GetWorld(),
+                    self:GetPos(), 350, 100)
                 util.ScreenShake(self:GetPos(), 100, 10, 1, 1000)
-
             end
-
-
+    
 
             if IsValid(self.driver) and self.driver:IsPlayer() then
-
                 self.driver:TakeDamage(1000, self, self)
-
             end
-
-
-
             if IsValid(self.gunner) and self.gunner:IsPlayer() then
-
                 self.gunner:TakeDamage(1000, self, self)
-
             end
-
-
-
-            SafeRemoveEntity(self.fire)
-
-            SafeRemoveEntity(self.smoke)
 
             SafeRemoveEntity(self.seatDriver)
-
             SafeRemoveEntity(self.seatGunner)
-
             SafeRemoveEntity(self)
-
-        elseif self.health <= 100 then
-
-            if not self.fire then
-
-                self.fire = ents.Create("env_fire_trail")
-
-                self.fire:SetPos(self:GetPos() + Vector(-20 * math.cos(math.rad(self:GetAngles().y)), -20 * math.sin(math.rad(self:GetAngles().y)), 40))
-
-                self.fire:SetParent(self)
-
-                self.fire:Spawn()
-
-                self.fire:Activate()
-
-            end
-
         else
-
-            if IsValid(self.fire) then
-
-                self.fire:Remove()
-
-                self.fire = nil
-
-            end
-
         end
-
-
-
         self:NetworkNotifyPVS(true)
-
     end
-
-
-
-    function ENT:OnTakeDamage(dmgInfo)
-
-        
-
-        BaseClass.OnTakeDamage(self, dmgInfo)
-
-        if dmgInfo:GetInflictor() == self then return end
-
-        self.health = self.health - dmgInfo:GetDamage() * 3
-
-        self:SetHealth(self.health)
-
-        self:ProcessDamage()
-
-    end
-
-
-
-    local minicopterGibs = {"models/vehicles/darky_m/rust/minicopter_gib0.mdl", "models/vehicles/darky_m/rust/minicopter_gib1.mdl", "models/vehicles/darky_m/rust/minicopter_gib2.mdl", "models/vehicles/darky_m/rust/minicopter_gib3.mdl", "models/vehicles/darky_m/rust/minicopter_gib4.mdl", "models/vehicles/darky_m/rust/minicopter_gib5.mdl", "models/vehicles/darky_m/rust/minicopter_gib6.mdl", "models/vehicles/darky_m/rust/minicopter_gib7.mdl", "models/vehicles/darky_m/rust/minicopter_gib8.mdl", "models/vehicles/darky_m/rust/minicopter_gib9.mdl"}
-
-
-
-    function ENT:CreateGibs()
-
-        for _, v in pairs(minicopterGibs) do
-
-            local ent = ents.Create("prop_physics")
-
-            ent:Ignite(30)
-
-
-
-            if IsValid(ent) then
-
-                ent:SetPos(self:GetPos())
-
-                ent:SetAngles(self:GetAngles())
-
-                ent:SetModel(v)
-
-                ent:SetMaterial("models/darky_m/rust/minicopter/minicoptor prt 1")
-
-                ent:SetRenderMode(RENDERMODE_TRANSALPHA)
-
-                ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
-
-                ent:Spawn()
-
-                ent:Activate()
-
-
-
-                if self.fuel > 0 and math.random(1, 8) == 3 then
-
-                    local random = math.random(15, 25)
-
-                    ent:Ignite(random)
-
-
-
-                    timer.Simple(random - 1, function()
-
-                        if IsValid(ent) then
-
-                            ent:Extinguish()
-
-                        end
-
-                    end)
-
-                end
-
-
-
-                if v == "models/vehicles/darky_m/rust/minicopter_gib1.mdl" then
-
-                    local fltr = RecipientFilter()
-
-                    fltr:AddAllPlayers()
-
-                    ent.gibsound = CreateSound(ent, "rust_minicopter_gib", fltr)
-
-                    ent.gibsound:SetSoundLevel(100)
-
-                    ent.gibsound:Play()
-
-
-
-                    timer.Simple(3, function()
-
-                        if ent and ent.gibsound then
-
-                            ent.gibsound:Stop()
-
-                            ent.gibsound = nil
-
-                        end
-
-                    end)
-
-
-
-                    if self.fuel > 0 then
-
-                        ent.expsound = CreateSound(ent, "rust_minicopter_explosion", fltr)
-
-                        ent.expsound:SetSoundLevel(100)
-
-                        ent.expsound:Play()
-
-
-
-                        timer.Simple(3, function()
-
-                            if ent and ent.expsound then
-
-                                ent.expsound:Stop()
-
-                                ent.expsound = nil
-
-                            end
-
-                        end)
-
-                    end
-
-                end
-
-
-
-                SafeRemoveEntityDelayed(ent, 30)
-
-                local PhysObj = ent:GetPhysicsObject()
-
-
-
-                if IsValid(PhysObj) then
-
-                    PhysObj:SetVelocityInstantaneous(VectorRand() * math.max(300, self.storedVel:Length() / 3) + self.storedVel)
-
-                    PhysObj:AddAngleVelocity(VectorRand() * 500)
-
-                    PhysObj:EnableDrag(false)
-
-
-
-                    if self.fuel > 0 then
-
-                        local effectdata = EffectData()
-
-                        effectdata:SetOrigin(ent:GetPos())
-
-                        effectdata:SetStart(PhysObj:GetMassCenter())
-
-                        effectdata:SetEntity(ent)
-
-                        effectdata:SetScale(math.Rand(0.3, 0.7))
-
-                        effectdata:SetMagnitude(math.Rand(0.5, 2.5))
-
-                        util.Effect("minicopter_firetrail", effectdata)
-
-                    end
-
-                end
-
-
-
-                timer.Simple(29 + math.Rand(0, 0.5), function()
-
-                    if not IsValid(ent) then return end
-
-                    ent:SetRenderFX(kRenderFxFadeFast)
-
-                end)
-
-            end
-
-        end
-
-    end
-
-
 
     function ENT:PhysicsCollide(colData, phys)
 
