@@ -120,11 +120,18 @@ local ORE_SEQ = {
 hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local ply = dmg:GetAttacker()
     if not IsValid(ply) or not ply:IsPlayer() then return end
-
-    local wep   = ply:GetActiveWeapon()
-    if not IsValid(wep) then return end
-    local class = wep:GetClass()
+    if not IsValid(ply:GetActiveWeapon()) then return end
+    local class = ply:GetActiveWeapon():GetClass()
     local notify = nil
+
+    -- killer chicken animal fat reward
+    if ent:GetClass() == "npc_vj_f_killerchicken" then
+        local animalFatReward = math.random(1, 3) -- Give 1-3 animal fat per hit
+        ply:GiveItem("fat.animal", animalFatReward)
+        ply:SyncInventory()
+        ply:SendNotification("Animal Fat", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. animalFatReward)
+        return
+    end
 
     -- trees
     local maxHP = TREE_MODELS[ent:GetModel()]
@@ -222,28 +229,4 @@ hook.Add("InitPostEntity", "SpawnRockyss", function()
     end)
 
     if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end
-end)
-
-concommand.Add("tp_ore", function(ply)
-    if not IsValid(ply) or not ply:IsPlayer() then return end
-    local ores = ents.FindByClass("rust_ore")
-    if #ores == 0 then
-        ply:ChatPrint("Нет доступных руд!")
-        return
-    end
-
-    local closest, dist, ppos = nil, math.huge, ply:GetPos()
-    for _, ore in ipairs(ores) do
-        if IsValid(ore) then
-            local d = ppos:Distance(ore:GetPos())
-            if d < dist then dist, closest = d, ore end
-        end
-    end
-
-    if IsValid(closest) then
-        ply:SetPos(closest:GetPos() + Vector(0, 0, 50))
-        ply:ChatPrint("Телепортирован к ближайшей руде!")
-    else
-        ply:ChatPrint("Не найдено валидных руд!")
-    end
 end)

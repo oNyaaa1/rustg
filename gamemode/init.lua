@@ -246,6 +246,7 @@ hook.Add("InitPostEntity", "SpawnRockyss", function()
                     ent:SetPos(pos)
                     ent:Spawn()
                     ent:Activate()
+                    ent:SetModelScale(1.75, 0) -- Scale the chicken a bit
                     ent:DropToFloor()
                     Logger("[Spawn] Chicken at position: " .. tostring(ent:GetPos()))
                 else

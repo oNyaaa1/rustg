@@ -6,7 +6,7 @@ Item = gRust.ItemRegister("wood")
 Item:SetName("Wood")
 Item:SetDescription("Wood. Collected from trees and used in many crafting recipes. It's also needed to cook in camp-fires.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/wood.png")
 Item:SetModel("models/items/wood.mdl")
 Item:SetSound("wood")
@@ -18,7 +18,7 @@ Item = gRust.ItemRegister("stone")
 Item:SetName("Stone")
 Item:SetDescription("Harvested from rocks using tools, basic building material.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/stone.png")
 Item:SetModel("models/items/stone.mdl")
 gRust.RegisterItem(Item)
@@ -29,7 +29,7 @@ Item = gRust.ItemRegister("metal.ore")
 Item:SetName("Metal Ore")
 Item:SetDescription("Metal ore can be smelted into metal fragments through a furnace which is used to craft most of the tools, structures, items and weaponry throughout the game and is vital to have during most of the time being.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/metal_ore.png")
 Item:SetModel("models/items/metal_ore.mdl")
 gRust.RegisterItem(Item)
@@ -40,7 +40,7 @@ Item = gRust.ItemRegister("hq.metal.ore")
 Item:SetName("High Quality Metal Ore")
 Item:SetDescription("A rock containing High Quality Metal. Can be smelted in a furnace.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(250)
 Item:SetIcon("materials/items/resources/hqmetal_ore.png")
 gRust.RegisterItem(Item)
 --
@@ -49,7 +49,7 @@ gRust.RegisterItem(Item)
 Item = gRust.ItemRegister("sulfur.ore")
 Item:SetName("Sulfur Ore")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/sulfur_ore.png")
 Item:SetModel("models/items/sulfur_ore.mdl")
 gRust.RegisterItem(Item)
@@ -60,7 +60,7 @@ Item = gRust.ItemRegister("sulfur")
 Item:SetName("Sulfur")
 Item:SetDescription("Sulfur ore is a resource found in Sulfur nodes. Smelting sulfur ore in any furnace will give sulfur, an ingredient in crafting gunpowder.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/sulfur.png")
 Item:SetModel("models/items/sulphur.mdl")
 gRust.RegisterItem(Item)
@@ -71,7 +71,7 @@ Item = gRust.ItemRegister("metal.fragments")
 Item:SetName("Metal Fragments")
 Item:SetDescription("Metal Fragments. Smelted from Metal Ore, used in lots of different crafting recipes.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/metal_fragments.png")
 Item:SetModel("models/items/metalfragments.mdl")
 gRust.RegisterItem(Item)
@@ -82,7 +82,7 @@ Item = gRust.ItemRegister("metal.refined")
 Item:SetName("High Quality Metal")
 Item:SetDescription("High Quality Metal is considered as a rare resource used for crafting metal items such as armor, doors, weapons and more. High Quality Metal is often used as the 'top-tier' when constructing or upgrading building blocks.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(250)
 Item:SetIcon("materials/items/resources/hqmetal.png")
 Item:SetModel("models/items/hqmetal.mdl")
 Item:SetSound("metal")
@@ -94,7 +94,7 @@ Item = gRust.ItemRegister("charcoal")
 Item:SetName("Charcoal")
 Item:SetDescription("Charcoal is the byproduct of wood when used for smelting in a campfire or furnace. It is used in conjunction with sulfur to craft gunpowder, a key ingredient for ammunition and explosives. Though it may be tempting to throw charcoal away, large quantities will be required in later stages of the game. Keep it if you can.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/charcoal.png")
 Item:SetModel("models/items/charcoal.mdl")
 Item:SetSound("charcoal")
@@ -106,7 +106,7 @@ Item = gRust.ItemRegister("cloth")
 Item:SetName("Cloth")
 Item:SetDescription("Cloth is a basic resource that has several means of being harvested. Most commonly it is farmed with hemp and hemp seeds, but can be gathered from animals and even cacti with the appropriate tools. It is used primarily for clothing, and the refining of low grade when combined with animal fat. To make cloth gathering a trivial task, the proper use of planters is recommended.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/cloth.png")
 Item:SetModel("models/items/cloth.mdl")
 Item:SetSound("cloth")
@@ -118,7 +118,7 @@ Item = gRust.ItemRegister("scrap")
 Item:SetName("Scrap")
 Item:SetDescription("Resource mainly used for researching items into blueprints at workbenches or going down the tech tree, which allows for targeting certain items you want to acquire. It's also a type of currency, used for trading various items at the Scientist Outpost and the Bandit Camp. As such, Scrap is very valuable and essential at any point in the game.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(2500)
 Item:SetIcon("materials/items/resources/scrap.png")
 Item:SetModel("models/items/scrappile.mdl")
 Item:SetSound("metal")
@@ -130,15 +130,28 @@ Item = gRust.ItemRegister("gears")
 Item:SetName("Gears")
 Item:SetDescription("Gears are used in the crafting of various desirable (building) supplies involved in base defense, such as traps, gates, and first and foremost armored & garage doors, which are significantly stronger than sheet metal doors. These are hard to come by in large quantities and are one of the more sought after items in the game.")
 Item:SetCategory("Resources")
-Item:SetStack(1000)
+Item:SetStack(20)
 Item:SetIcon("materials/items/resources/gears.png")
 Item:SetModel("models/items/gears.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
+
     {
+
         item = "metal.fragments",
-        amount = 3
+
+        amount = 30
+
     },
+
+    {
+
+        item = "scrap",
+
+        amount = 24
+
+    }
+
 })
 
 gRust.RegisterItem(Item)
@@ -154,10 +167,24 @@ Item:SetIcon("materials/items/resources/road_signs.png")
 Item:SetModel("models/items/roadsigns.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
+
     {
-        item = "metal.fragments",
-        amount = 3
+
+        item = "scrap",
+
+        amount = 5
+
     },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 2
+
+    }
+
+
 })
 
 gRust.RegisterItem(Item)
@@ -173,12 +200,25 @@ Item:SetIcon("materials/items/resources/metal_pipe.png")
 Item:SetModel("models/items/metalpipe.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 5
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 2
+
+    }
+
+
+})
 gRust.RegisterItem(Item)
 --
 -- Metal Spring
@@ -192,12 +232,25 @@ Item:SetIcon("materials/items/resources/metal_spring.png")
 Item:SetModel("models/items/spring.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 24
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 4
+
+    }
+
+
+})
 gRust.RegisterItem(Item)
 --
 -- Sheet Metal
@@ -211,12 +264,33 @@ Item:SetIcon("materials/items/resources/sheet_metal.png")
 Item:SetModel("models/items/sheetmetal.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 20
+
+    },
+
+    {
+
+        item = "metal.fragments",
+
+        amount = 240
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 2
+
+    }
+
+
+})
 gRust.RegisterItem(Item)
 --
 -- Semi Auto Body
@@ -229,12 +303,33 @@ Item:SetStack(10)
 Item:SetIcon("materials/items/resources/semi_auto_body.png")
 Item:SetModel("models/items/semibody.mdl")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 36
+
+    },
+
+    {
+
+        item = "metal.fragments",
+
+        amount = 180
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 4
+
+    }
+
+
+})
 gRust.RegisterItem(Item)
 --
 -- Rifle Body
@@ -247,12 +342,24 @@ Item:SetStack(10)
 Item:SetIcon("materials/items/resources/rifle_body.png")
 Item:SetModel("models/items/rifle_body.mdl")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 60
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 4
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- SMG Body
@@ -266,12 +373,24 @@ Item:SetIcon("materials/items/resources/smg_body.png")
 Item:SetModel("models/items/smgbody.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 36
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 4
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- Tech Trash
@@ -285,12 +404,24 @@ Item:SetIcon("materials/items/resources/tech_trash.png")
 Item:SetModel("models/items/techtrash.mdl")
 Item:SetSound("metal")
 Item:SetCraft({
-    {
-        item = "metal.fragments",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 48
+
+    },
+
+    {
+
+        item = "metal.refined",
+
+        amount = 2
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- Sewing Kit
@@ -304,10 +435,23 @@ Item:SetIcon("materials/items/resources/sewing_kit.png")
 Item:SetModel("models/items/sewingkit.mdl")
 Item:SetSound("cloth")
 Item:SetCraft({
+
     {
-        item = "cloth",
-        amount = 3
+
+        item = "rope",
+
+        amount = 6
+
     },
+
+    {
+
+        item = "cloth",
+
+        amount = 40
+
+    }
+
 })
 
 gRust.RegisterItem(Item)
@@ -324,10 +468,9 @@ Item:SetModel("models/items/rope.mdl")
 Item:SetCraft({
     {
         item = "cloth",
-        amount = 3
-    },
+        amount = 60
+    }
 })
-
 gRust.RegisterItem(Item)
 --
 -- Tarp
@@ -342,10 +485,9 @@ Item:SetModel("models/items/tarp.mdl")
 Item:SetCraft({
     {
         item = "cloth",
-        amount = 3
-    },
+        amount = 120
+    }
 })
-
 gRust.RegisterItem(Item)
 --
 -- Tarp
@@ -392,12 +534,24 @@ Item:SetStack(50)
 Item:SetIcon("materials/items/resources/metal_blade.png")
 Item:SetModel("models/items/metalblade.mdl")
 Item:SetCraft({
-    {
-        item = "metal.refined",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 4
+
+    },
+
+    {
+
+        item = "metal.fragments",
+
+        amount = 36
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- Propane Tank
@@ -410,12 +564,24 @@ Item:SetStack(5)
 Item:SetIcon("materials/items/resources/propane_tank.png")
 Item:SetModel("models/items/propanetank.mdl")
 Item:SetCraft({
-    {
-        item = "metal.refined",
-        amount = 3
-    },
-})
 
+    {
+
+        item = "scrap",
+
+        amount = 2
+
+    },
+
+    {
+
+        item = "metal.fragments",
+
+        amount = 100
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- Electric Fuse
@@ -427,6 +593,17 @@ Item:SetCategory("Resources")
 Item:SetStack(10)
 Item:SetIcon("materials/items/resources/fuse.png")
 --Item:SetModel("models/items/propanetank.mdl")
+Item:SetCraft({
+
+    {
+
+        item = "scrap",
+
+        amount = 48
+
+    }
+
+})
 gRust.RegisterItem(Item)
 --
 -- Gunpowder

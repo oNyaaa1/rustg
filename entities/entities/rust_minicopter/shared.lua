@@ -1145,9 +1145,19 @@ if SERVER then
 
         if self.health <= 0 then
 
-            self:StopMotionController()
+            -- Defer StopMotionController to avoid physics callback error
+            timer.Simple(0, function()
+                if IsValid(self) then
+                    self:StopMotionController()
+                end
+            end)
 
-            self:CreateGibs()
+            -- Defer CreateGibs to avoid physics callback error
+            timer.Simple(0, function()
+                if IsValid(self) then
+                    self:CreateGibs()
+                end
+            end)
 
 
 
