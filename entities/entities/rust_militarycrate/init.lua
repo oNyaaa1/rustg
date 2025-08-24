@@ -32,12 +32,18 @@ function ENT:Initialize()
             self:PopulateWithItems()
         end
     end)
+
+    timer.Create("CheckEmpty_" .. self:EntIndex(), 2, 0, function()
+        if IsValid(self) then
+            self:CheckAndRespawnIfEmpty()
+        else
+            timer.Remove("CheckEmpty_" .. self:EntIndex())
+        end
+    end)
 end
 
 function ENT:PopulateWithItems()
- 
     local militaryLootItems = {
-
         {
             itemid = "smgbody",
             amount = {1, 1},
@@ -58,25 +64,21 @@ function ENT:PopulateWithItems()
             amount = {15, 24},
             chance = 0.17,
         },
-
         {
             itemid = "riflebody",
             amount = {1, 1},
             chance = 0.16,
         },
-
         {
             itemid = "gears",
             amount = {1, 1},
             chance = 0.09,
         },
-
         {
             itemid = "sewingkit",
             amount = {1, 1},
             chance = 0.07,
         },
-        
         {
             itemid = "supply.signal",
             amount = {1, 1},
@@ -112,7 +114,6 @@ function ENT:PopulateWithItems()
             amount = {1, 1},
             chance = 0.01,
         },
-
         {
             itemid = "rocket.launcher",
             amount = {1, 1},
@@ -164,7 +165,7 @@ function ENT:PopulateWithItems()
             chance = 0.005,
         },
         {
-            itemid = "smg.2", -- custom_smg
+            itemid = "smg.2",
             amount = {1, 1},
             chance = 0.005,
         },
@@ -243,7 +244,6 @@ function ENT:PopulateWithItems()
             amount = {2, 5},
             chance = 0.005,
         },
-        
         {
             itemid = "roadsigns",
             amount = {1, 3},
@@ -276,7 +276,6 @@ function ENT:PopulateWithItems()
         },
     }
     
-    -- Проверяем наличие предметов и создаем список доступных
     local availableItems = {}
     for _, itemData in ipairs(militaryLootItems) do
         local itemDef = gRust.Items[itemData.itemid]
@@ -285,12 +284,10 @@ function ENT:PopulateWithItems()
         end
     end
     
-    -- Если нет доступных предметов, выходим
     if #availableItems == 0 then
         return
     end
     
-    -- Очищаем инвентарь
     if self.Inventory then
         for i = 1, self.InventorySlots do
             if self.Inventory[i] then
@@ -301,7 +298,6 @@ function ENT:PopulateWithItems()
     
     local currentSlot = 1
     
-    -- Добавляем скрап только один раз в первый слот
     if gRust.Items["scrap"] then
         local scrapItem = gRust.CreateItem("scrap", 8)
         if scrapItem then
@@ -310,16 +306,13 @@ function ENT:PopulateWithItems()
         end
     end
     
-    -- Определяем количество дополнительных предметов (от 1 до 5)
     local additionalItemCount = math.random(1, 5)
     
-    -- Перемешиваем список предметов для случайности
     local shuffledItems = {}
     for i = 1, #availableItems do
         table.insert(shuffledItems, availableItems[i])
     end
     
-    -- Простое перемешивание
     for i = #shuffledItems, 2, -1 do
         local j = math.random(i)
         shuffledItems[i], shuffledItems[j] = shuffledItems[j], shuffledItems[i]
@@ -327,7 +320,6 @@ function ENT:PopulateWithItems()
     
     local addedItems = 0
     
-    -- Добавляем дополнительные предметы
     for _, itemData in ipairs(shuffledItems) do
         if addedItems >= additionalItemCount then
             break
@@ -339,15 +331,13 @@ function ENT:PopulateWithItems()
         
         local randomChance = math.random()
         if randomChance <= itemData.chance then
-            -- Определяем количество предмета
             local amount = 1
             if type(itemData.amount) == "table" then
-                amount = math.random(itemData.amount[1], itemData.amount[2])
+                amount = math.random(itemData.amount[1], itemData.amount[11])
             else
                 amount = itemData.amount
             end
             
-            -- Создаем предмет
             local item = gRust.CreateItem(itemData.itemid, amount)
             if item then
                 self:SetSlot(item, currentSlot)
@@ -391,6 +381,8 @@ function ENT:ScheduleRespawn()
     local pos = self.SpawnPosition or self:GetPos()
     local ang = self.SpawnAngles or self:GetAngles()
     
+    timer.Remove("CheckEmpty_" .. self:EntIndex())
+    
     self:Remove()
     
     timer.Create("MilitaryCrateRespawn_" .. tostring(pos), 10, 1, function()
@@ -402,6 +394,10 @@ function ENT:ScheduleRespawn()
             newCrate:Activate()
         end
     end)
+end
+
+function ENT:OnRemove()
+    timer.Remove("CheckEmpty_" .. self:EntIndex())
 end
 
 function ENT:Use(activator, caller)
