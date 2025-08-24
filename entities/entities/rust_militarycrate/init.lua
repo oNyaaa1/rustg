@@ -35,9 +35,9 @@ function ENT:Initialize()
 end
 
 function ENT:PopulateWithItems()
-    -- Список предметов ТОЧНО как в оригинальном Rust (БЕЗ ПАТРОНОВ)
+ 
     local militaryLootItems = {
-        -- Очень частые предметы (17%)
+
         {
             itemid = "smgbody",
             amount = {1, 1},
@@ -58,36 +58,32 @@ function ENT:PopulateWithItems()
             amount = {15, 24},
             chance = 0.17,
         },
-        
-        -- Частые предметы (16%)
+
         {
             itemid = "riflebody",
             amount = {1, 1},
             chance = 0.16,
         },
-        
-        -- Необычные предметы (9%)
+
         {
-            itemid = "gears", -- targeting_computer
+            itemid = "gears",
             amount = {1, 1},
             chance = 0.09,
         },
-        
-        -- Редкие предметы (7%)
+
         {
-            itemid = "sewingkit", -- cctv_camera
+            itemid = "sewingkit",
             amount = {1, 1},
             chance = 0.07,
         },
         
-        -- Очень редкие предметы (1%)
         {
             itemid = "supply.signal",
             amount = {1, 1},
             chance = 0.01,
         },
         {
-            itemid = "syringe.medical", -- large_medkit
+            itemid = "syringe.medical",
             amount = {1, 1},
             chance = 0.01,
         },
@@ -102,12 +98,12 @@ function ENT:PopulateWithItems()
             chance = 0.01,
         },
         {
-            itemid = "weapon.mod.muzzlebrake", -- muzzle_boost
+            itemid = "weapon.mod.muzzlebrake",
             amount = {1, 1},
             chance = 0.01,
         },
         {
-            itemid = "grenade.beancan", -- f1_grenade
+            itemid = "grenade.beancan",
             amount = {1, 1},
             chance = 0.01,
         },
@@ -116,8 +112,7 @@ function ENT:PopulateWithItems()
             amount = {1, 1},
             chance = 0.01,
         },
-        
-        -- Легендарные предметы (0.5%)
+
         {
             itemid = "rocket.launcher",
             amount = {1, 1},
@@ -249,7 +244,6 @@ function ENT:PopulateWithItems()
             chance = 0.005,
         },
         
-        -- Дополнительные компоненты (с низкими шансами)
         {
             itemid = "roadsigns",
             amount = {1, 3},
