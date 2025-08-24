@@ -219,7 +219,7 @@ function PLAYER:CancelCraft(index)
     local itemdata = gRust.Items[craft.item]
     if not itemdata then return false end
     local progress = self:GetCraftProgress(index)
-    local refundMultiplier = 1 - (progress * 0.5)
+    local refundMultiplier = 1
     local craftRecipe = itemdata:GetCraft()
     for _, recipe in ipairs(craftRecipe) do
         local refundAmount = math.ceil(recipe.amount * craft.amount * refundMultiplier)
