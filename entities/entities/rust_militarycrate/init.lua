@@ -333,7 +333,7 @@ function ENT:PopulateWithItems()
         if randomChance <= itemData.chance then
             local amount = 1
             if type(itemData.amount) == "table" then
-                amount = math.random(itemData.amount[1], itemData.amount[11])
+                amount = math.random(itemData.amount[1], itemData.amount[2])
             else
                 amount = itemData.amount
             end
