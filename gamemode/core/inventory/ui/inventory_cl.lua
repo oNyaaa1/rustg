@@ -1,5 +1,5 @@
 local InitialPos = -(ScrW() * 0.1)
-local LeftWidth, RightWidth = ScrW() * 0.365, ScrW() * 0.35
+local LeftWidth, RightWidth = ScrW() * 0.365, ScrW() * 0.3550
 local LeftShift, RightShift = ScrW() * 0.0055, 0
 local OpenItemMenu
 CreateClientConVar("grust_inventorymodel", "1", true, false)
