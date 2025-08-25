@@ -1,5 +1,5 @@
---
 Logger("Loading mining system")
+
 hook.Add("PlayerSpawn", "FixSpawnShiz", function(ply)
     for k, v in pairs(ents.FindInSphere(ply:GetPos(), 10)) do
         if v:GetClass() == "rust_ore" then ply:SetPos(v:GetPos() + Vector(v:OBBMins().x, v:OBBMins().y, v:OBBMins().z + 12)) end
@@ -75,30 +75,53 @@ local ORE_SEQ = {
 -- Helper function to make trees fall and fade away
 local function MakeTreeFall(ent)
     if not IsValid(ent) then return end
+    
+    -- Store tree information for respawn
+    local treePos = ent:GetPos()
+    local treeAngles = ent:GetAngles()
+    local treeModel = ent:GetModel()
+    
     -- Convert to physics object and make it fall
     ent:SetMoveType(MOVETYPE_VPHYSICS)
     ent:SetSolid(SOLID_VPHYSICS) -- Keep solid for world collision
     ent:PhysicsInit(SOLID_VPHYSICS)
     ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS) -- Don't collide with players but still with world
+    
     local phys = ent:GetPhysicsObject()
     if IsValid(phys) then
         phys:Wake()
-        phys:SetMass(500) -- Make it heavy enough to fall nicely
-        -- Add a slight random impulse to make it fall in a direction
-        local impulse = Vector(math.random(-200, 200), math.random(-200, 200), -100)
-        phys:ApplyForceCenter(impulse)
+        phys:SetMass(800) -- Realistic tree weight
+        
+        -- Choose a random direction to fall (like wind direction)
+        local fallDirection = Angle(0, math.random(0, 360), 0):Forward()
+        fallDirection.z = 0 -- Keep it horizontal
+        fallDirection:Normalize()
+        
+        -- Apply torque to make it tip over from the base (like a real tree)
+        local torque = Vector(fallDirection.y, -fallDirection.x, 0) * 3000
+        phys:ApplyTorqueCenter(torque)
+        
+        -- Small initial push in the fall direction
+        local push = fallDirection * 100
+        push.z = -50 -- Slight downward force
+        phys:ApplyForceCenter(push)
+        
+        -- Set the tree's center of mass higher to make it tip more naturally
+        phys:SetMass(800)
     end
 
-    -- Start transparency fade after 2 seconds
-    timer.Simple(2, function()
+    -- Start transparency fade after 3 seconds (give more time to see the fall)
+    timer.Simple(3, function()
         if IsValid(ent) then
             local alpha = 255
             local fadeTimer = "tree_fade_" .. ent:EntIndex()
-            timer.Create(fadeTimer, 0.1, 30, function()
+            
+            timer.Create(fadeTimer, 0.1, 40, function() -- Slower fade (4 seconds)
                 if IsValid(ent) then
-                    alpha = alpha - 8.5 -- Fade over 3 seconds (30 * 0.1 = 3s)
+                    alpha = alpha - 6.375 -- Fade over 4 seconds (40 * 0.1 = 4s)
                     ent:SetColor(Color(255, 255, 255, math.max(0, alpha)))
                     ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+                    
                     if alpha <= 0 then
                         timer.Remove(fadeTimer)
                         ent:Remove()
@@ -107,6 +130,21 @@ local function MakeTreeFall(ent)
                     timer.Remove(fadeTimer)
                 end
             end)
+        end
+    end)
+    
+    -- Respawn tree after 10-15 minutes
+    timer.Simple(math.random(600, 900), function()
+        local newTree = ents.Create("prop_dynamic")
+        if IsValid(newTree) then
+            newTree:SetModel(treeModel)
+            newTree:SetPos(treePos)
+            newTree:SetAngles(treeAngles)
+            newTree:Spawn()
+            newTree:Activate()
+            -- Reset tree health so it can be chopped again
+            newTree.treeHealth = nil
+            newTree.treeHits = nil
         end
     end)
 end
@@ -165,6 +203,8 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
     if ent.oreHealth <= 0 then
         local pos = ent:GetPos()
         ent:Remove()
+        
+        -- Respawn ore after 5-10 minutes
         timer.Simple(math.random(300, 600), function()
             local e = ents.Create("rust_ore")
             if IsValid(e) then
@@ -174,17 +214,5 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
                 e:Activate()
             end
         end)
-
-        if ent:GetClass() == "rust_hemp" then
-            local pos = ent:GetPos()
-            timer.Simple(math.random(60, 120), function()
-                local e = ents.Create("rust_hemp")
-                if IsValid(e) then
-                    e:SetPos(pos)
-                    e:Spawn()
-                    e:Activate()
-                end
-            end)
-        end
     end
 end)

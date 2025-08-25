@@ -19,7 +19,6 @@ function ENT:Initialize()
 	self:SetBodygroup(1, 3)
 	
 	self.CanPickup = true
-	self.RespawnTime = 300
 	self.MaxUses = 1
 	self.CurrentUses = 0
 end
@@ -31,24 +30,14 @@ function ENT:Use(activator, caller)
     if self.CurrentUses >= self.MaxUses then return end
 
     if activator:GiveItem("cloth", 10) then
-
         activator:EmitSound(gRust.RandomGroupedSound(string.format("pickup.%s","cloth")))
+        activator:SendNotification("Cloth", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. 10)
         
         self.CurrentUses = self.CurrentUses + 1
 
         if self.CurrentUses >= self.MaxUses then
-            self:SetNoDraw(true)
-            self:SetNotSolid(true)
-            
-            timer.Simple(self.RespawnTime, function()
-                if IsValid(self) then
-                    self:SetNoDraw(false)
-                    self:SetNotSolid(false)
-                    self.CurrentUses = 0
-                end
-            end)
+            self:Remove() -- Remove hemp permanently instead of respawning
         end
-
     else
         activator:ChatPrint("")
     end
