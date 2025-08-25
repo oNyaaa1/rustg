@@ -139,6 +139,7 @@ function SpawningSystem.SpawnRoadSigns()
             roadsign:SetAngles(spawn.ang)
             roadsign:Spawn()
             roadsign:Activate()
+            roadsign:DropToFloor()
             spawnedCount = spawnedCount + 1
         else
             failedCount = failedCount + 1
