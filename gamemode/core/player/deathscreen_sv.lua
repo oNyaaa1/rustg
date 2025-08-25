@@ -99,6 +99,11 @@ function GetPlayerSleepingBags(ply)
     if not playerSleepingBags[steamID] then playerSleepingBags[steamID] = LoadPlayerSleepingBags(steamID) end
     for i = #playerSleepingBags[steamID], 1, -1 do
         local bagData = playerSleepingBags[steamID][i]
+        if bagData == nil then
+            table.remove(playerSleepingBags[steamID], i)
+            continue
+        end
+
         if IsValid(bagData.entity) then
             table.insert(validBags, bagData)
         else
@@ -110,6 +115,24 @@ function GetPlayerSleepingBags(ply)
     return validBags
 end
 
+--[[
+    if not IsValid(ply) then return {} end
+    local steamID = ply:SteamID64()
+    local validBags = {}
+    if not playerSleepingBags[steamID] then playerSleepingBags[steamID] = LoadPlayerSleepingBags(steamID) end
+    for i = #playerSleepingBags[steamID], 1, -1 do
+        local bagData = playerSleepingBags[steamID][i]
+        if IsValid(bagData.entity) then
+            table.insert(validBags, bagData)
+        else
+            table.remove(playerSleepingBags[steamID], i)
+        end
+    end
+
+    if #validBags ~= #playerSleepingBags[steamID] then SavePlayerSleepingBags(ply) end
+    return validBags
+end
+]]
 hook.Add("PlayerInitialSpawn", "gRust.LoadSleepingBags", function(ply)
     local steamID = ply:SteamID64()
     playerSleepingBags[steamID] = LoadPlayerSleepingBags(steamID)
@@ -117,8 +140,8 @@ hook.Add("PlayerInitialSpawn", "gRust.LoadSleepingBags", function(ply)
     if playerSleepingBags[steamID] then
         for _, bagData in ipairs(playerSleepingBags[steamID]) do
             if IsValid(bagData.entity) then
-                -- last_respawn уже устанавливается при LoadPlayerSleepingBags
-                -- Дополнительно можно обновить NWFloat, если потребуется
+                local data = sql.QueryRow(string.format("SELECT last_respawn FROM player_sleeping_bags WHERE steam_id = '%s' AND entity_id = %d", steamID, bagData.entity:EntIndex()))
+                if data and data.last_respawn then bagData.entity:SetNWFloat("LastRespawn", tonumber(data.last_respawn) or 0) end
             end
         end
     end
@@ -130,16 +153,16 @@ local function SendDeathScreenData(victim, attacker)
     if not IsValid(victim) then return end
     local sleepingBags = GetPlayerSleepingBags(victim)
     net.Start("gRust.DeathScreen")
-    net.WriteEntity(attacker or victim)
+    net.WriteEntity(victim)
     net.WriteUInt(#sleepingBags, 8)
     for _, bagData in ipairs(sleepingBags) do
         net.WriteUInt(bagData.entity:EntIndex(), 13)
         net.WriteVector(bagData.pos)
         local lastRespawn = bagData.entity:GetNWFloat("LastRespawn", 0)
-        local canRespawn = (lastRespawn + (bagData.entity.RespawnDelay or 300)) <= CurTime()
+        local canRespawn = (lastRespawn + (bagData.entity.RespawnDelay or 10)) <= CurTime()
         net.WriteBool(canRespawn)
         if not canRespawn then
-            local timeLeft = (lastRespawn + (bagData.entity.RespawnDelay or 300)) - CurTime()
+            local timeLeft = (lastRespawn + (bagData.entity.RespawnDelay or 10)) - CurTime()
             net.WriteFloat(timeLeft)
         end
     end
@@ -147,12 +170,12 @@ local function SendDeathScreenData(victim, attacker)
     net.Send(victim)
 end
 
-hook.Add("PlayerDeath", "gRust.PlayerDeath", function(victim, inflictor, attacker)
+hook.Add("PlayerDeath", "gRust.PlayerDeaths", function(victim, inflictor, attacker)
     if not IsValid(victim) then return end
-    timer.Simple(0.1, function()
-        if not IsValid(victim) then return end
-        SendDeathScreenData(victim, attacker)
-    end)
+    --timer.Simple(0.1, function()
+    -- if not IsValid(victim) then return end
+    SendDeathScreenData(victim, attacker)
+    --end)
 end)
 
 net.Receive("gRust.Respawn", function(len, ply)
@@ -174,7 +197,7 @@ net.Receive("gRust.BagRespawn", function(len, ply)
 
     if not selectedBag or not IsValid(selectedBag.entity) then return end
     local lastRespawn = selectedBag.entity:GetNWFloat("LastRespawn", 0)
-    local respawnDelay = selectedBag.entity.RespawnDelay or 300
+    local respawnDelay = selectedBag.entity.RespawnDelay or 10
     if lastRespawn + respawnDelay > CurTime() then return end
     ply:Spawn()
     timer.Simple(0.1, function() if IsValid(ply) then ply:SetPos(selectedBag.pos + Vector(0, 0, 50)) end end)
@@ -207,6 +230,8 @@ timer.Create("gRust.SaveSleepingBags", 300, 0, function()
     end
 end)
 
-if sql.TableExists("player_sleeping_bags") then
-else
-end
+hook.Add("ShutDown", "gRust.SaveAllSleepingBags", function()
+    for _, ply in pairs(player.GetAll()) do
+        SavePlayerSleepingBags(ply)
+    end
+end)

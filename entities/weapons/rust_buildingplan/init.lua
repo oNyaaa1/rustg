@@ -54,16 +54,12 @@ function SWEP:GetNumberOfPositionzz(ent, owner)
     local Position = math.NormalizeAngle(owner:GetAngles().y - ent:GetAngles().y)
     if Position < 0 then Position = Position + 360 end
     if Position >= 315 or Position < 45 then
-        print(315)
         return ent:GetForward() * 128
     elseif Position >= 45 and Position < 135 then
-        print(45)
         return -ent:GetRight() * 128
     elseif Position >= 135 and Position < 225 then
-        print(135)
         return -ent:GetForward() * 128
     elseif Position >= 225 and Position < 315 then
-        print(225)
         return ent:GetRight() * 128
     end
 end

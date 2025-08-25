@@ -79,6 +79,7 @@ local function HandleDeploy(len, pl)
         end
     end)
 
+    if Class == "rust_sleepingbag" then AddSleepingBagToPlayer(pl, ent) end
     -- Handle item consumption
     Item:SetQuantity(Item:GetQuantity() - 1)
     if Item:GetQuantity() <= 0 then

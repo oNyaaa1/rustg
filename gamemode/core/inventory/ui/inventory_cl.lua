@@ -5,6 +5,7 @@ local OpenItemMenu
 CreateClientConVar("grust_inventorymodel", "1", true, false)
 local Margin = ScrH() * 0.0055
 local function LeftPanel()
+	if not gRust.Team then return end
 	local Frame = gRust.Inventory
 	local scrw, scrh = ScrW(), ScrH()
 	local Panel = Frame:Add("Panel")
@@ -136,7 +137,6 @@ local function RightPanel()
 				wide = RightWidth + RightShift,
 				entity = Framezz.Container.Entity,
 			})
-			
 		end
 	end
 
