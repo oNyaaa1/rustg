@@ -111,7 +111,7 @@ local function ShowDeathScreen()
     --
     gRust.MapMenu = vgui.Create("gRust.Map", Frame)
     gRust.MapMenu:Dock(TOP)
-    gRust.MapMenu:DockMargin(0, 0, 0, scrh * 0.18)
+    gRust.MapMenu:DockMargin(0, 0, 0, 80)
     gRust.MapMenu:SetSize(scrw, 668)
     --
     local BottomPanel = Frame:Add("DPanel")

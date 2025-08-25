@@ -115,24 +115,6 @@ function GetPlayerSleepingBags(ply)
     return validBags
 end
 
---[[
-    if not IsValid(ply) then return {} end
-    local steamID = ply:SteamID64()
-    local validBags = {}
-    if not playerSleepingBags[steamID] then playerSleepingBags[steamID] = LoadPlayerSleepingBags(steamID) end
-    for i = #playerSleepingBags[steamID], 1, -1 do
-        local bagData = playerSleepingBags[steamID][i]
-        if IsValid(bagData.entity) then
-            table.insert(validBags, bagData)
-        else
-            table.remove(playerSleepingBags[steamID], i)
-        end
-    end
-
-    if #validBags ~= #playerSleepingBags[steamID] then SavePlayerSleepingBags(ply) end
-    return validBags
-end
-]]
 hook.Add("PlayerInitialSpawn", "gRust.LoadSleepingBags", function(ply)
     local steamID = ply:SteamID64()
     playerSleepingBags[steamID] = LoadPlayerSleepingBags(steamID)
