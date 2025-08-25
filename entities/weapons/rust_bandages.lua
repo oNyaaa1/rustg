@@ -15,18 +15,14 @@ SWEP.DownPos = Vector(0, 0, -2)
 SWEP.HoldType = "knife"
 SWEP.DrawTime = 1
 
-SWEP.Delay = 4 -- Time to apply bandage
-SWEP.AddHealth = 15 -- Health restored per bandage
+SWEP.Delay = 4 
+SWEP.AddHealth = 15 
 
 function SWEP:PrimaryAttack()
     local pl = self:GetOwner()
     if not IsValid(pl) then return end
     
-    -- Check if player is already at full health
     if pl:Health() >= pl:GetMaxHealth() then
-        if SERVER then
-            pl:ChatPrint("You are already at full health!")
-        end
         return
     end
     
@@ -34,9 +30,6 @@ function SWEP:PrimaryAttack()
     self.NextUse = CurTime() + self.Delay
     self:SetNextPrimaryFire(self.NextUse)
     
-    if SERVER then
-        pl:ChatPrint("Applying bandage...")
-    end
 end
 
 function SWEP:Think()
@@ -63,10 +56,6 @@ function SWEP:Heal(target)
     -- Apply healing
     target:SetHealth(math.min(target:GetMaxHealth(), target:Health() + self.AddHealth))
     
-    -- Play healing sound TODO: Replace
-    Owner:EmitSound("items/smallmedkit1.wav")
-    
-
     -- Consume one bandage (same logic as syringe)
     if slot:GetQuantity() > 1 then
         slot:SetQuantity(slot:GetQuantity() - 1)        

@@ -185,3 +185,7 @@ function ENT:Load(data)
 	self:SetPos(data.pos)
 	self:SetAngles(data.ang)
 end
+
+function ENT:GetDisplayName() 
+	return ""
+end

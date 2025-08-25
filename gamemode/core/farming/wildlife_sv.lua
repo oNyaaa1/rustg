@@ -15,11 +15,19 @@ local function MakeCreatureCorpse(ent, damageForce)
         return 
     end
     
+    -- Safety check - make sure this is actually a creature we handle
+    if not CREATURE_LOOT[ent:GetClass()] then
+        return
+    end
+    
     -- Store creature information
     local creaturePos = ent:GetPos()
     local creatureAngles = ent:GetAngles()
     local creatureModel = ent:GetModel()
     local creatureClass = ent:GetClass()
+    
+    -- Store the entity index for safety
+    local originalEntIndex = ent:EntIndex()
     
     -- Find ground position to prevent falling through
     local traceData = {
@@ -31,8 +39,8 @@ local function MakeCreatureCorpse(ent, damageForce)
     local groundPos = trace.Hit and trace.HitPos or creaturePos
     groundPos = groundPos + Vector(0, 0, 10) -- Lift 10 units above ground
     
-    -- Create a static prop as corpse (like in Rust)
-    local corpse = ents.Create("prop_physics")
+    -- Create a creature corpse entity (like in Rust)
+    local corpse = ents.Create("rust_creature_corpse")
     if not IsValid(corpse) then
         return
     end
@@ -51,6 +59,11 @@ local function MakeCreatureCorpse(ent, damageForce)
         if IsValid(corpse) then corpse:Remove() end
         return
     end
+    
+    -- Set up the corpse with proper health and type
+    corpse:SetHealth(CREATURE_LOOT[creatureClass].health)
+    corpse:SetMaxHealth(CREATURE_LOOT[creatureClass].health)
+    corpse:SetCreatureType(creatureClass)
     
     -- Make it fall down and settle properly
     local phys = corpse:GetPhysicsObject()
@@ -86,12 +99,6 @@ local function MakeCreatureCorpse(ent, damageForce)
         corpse:SetSolid(SOLID_VPHYSICS)
     end
     
-    -- Mark as mineable corpse
-    corpse.isCreatureCorpse = true
-    corpse.creatureType = creatureClass
-    corpse.miningHealth = CREATURE_LOOT[creatureClass].health
-    corpse.maxMiningHealth = CREATURE_LOOT[creatureClass].health
-    
     -- Make it slightly darker to show it's dead
     corpse:SetColor(Color(180, 180, 180, 255))
     
@@ -101,6 +108,11 @@ local function MakeCreatureCorpse(ent, damageForce)
             corpse:Remove()
         end
     end)
+    
+    -- Remove ONLY the original creature that died (safety check)
+    if IsValid(ent) and ent:EntIndex() == originalEntIndex then
+        ent:Remove()
+    end
     
     return corpse
 end
@@ -112,17 +124,15 @@ end
 
 gRust.Mining.MineCreatures = function(ply, ent, weapon, class)
     -- Only handle creature corpses
-    if ent.isCreatureCorpse and ent.creatureType then
-        local creatureData = CREATURE_LOOT[ent.creatureType]
+    if ent:GetClass() == "rust_creature_corpse" then
+        local creatureType = ent:GetCreatureType()
+        local creatureData = CREATURE_LOOT[creatureType]
         if not creatureData then return end
         
-        -- Initialize mining health if not set
-        if not ent.miningHealth then
-            ent.miningHealth = creatureData.health
-        end
-        
-        -- Reduce health
-        ent.miningHealth = ent.miningHealth - 10
+        -- Reduce health using rust_base system
+        local currentHealth = ent:Health()
+        local newHealth = currentHealth - 10
+        ent:SetHealth(newHealth)
         
         -- Give loot only from corpses
         for _, lootItem in pairs(creatureData.loot) do
@@ -134,7 +144,7 @@ gRust.Mining.MineCreatures = function(ply, ent, weapon, class)
         ply:SyncInventory()
         
         -- Remove corpse when fully mined
-        if ent.miningHealth <= 0 then
+        if newHealth <= 0 then
             ent:Remove()
         end
     end
