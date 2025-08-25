@@ -238,6 +238,7 @@ hook.Add("InitPostEntity", "SpawnRockyss", function()
             end
             local rnd = FindRandomPlacesOnMap(150)
             for i, pos in ipairs(rnd) do // ipairs(HempSpawns) do
+                -- Spawn first hemp plant
                 local ent2 = ents.Create("rust_map_hemp")
                 if IsValid(ent2) then
                     ent2:SetPos(pos)
@@ -245,6 +246,21 @@ hook.Add("InitPostEntity", "SpawnRockyss", function()
                     ent2:Activate()
                     ent2:DropToFloor()
                     Logger("[Spawn] Hemp at position: " .. tostring(ent2:GetPos()))
+                    
+                    -- 30% chance to spawn second hemp plant nearby
+                    if math.random(1, 100) <= 30 then
+                        local offset = Vector(math.random(-80, 80), math.random(-80, 80), 0)
+                        local nearbyPos = pos + offset
+                        
+                        local ent3 = ents.Create("rust_map_hemp")
+                        if IsValid(ent3) then
+                            ent3:SetPos(nearbyPos)
+                            ent3:Spawn()
+                            ent3:Activate()
+                            ent3:DropToFloor()
+                            Logger("[Spawn] Hemp pair at position: " .. tostring(ent3:GetPos()))
+                        end
+                    end
                 else
                     LoggerErr("[Spawn] Failed to create hemp entity at: " .. tostring(pos))
                 end
