@@ -125,6 +125,49 @@ local ORE_SEQ = {
     [3] = {item = "stone",      seq = {39,39,38,38,38,37,37,37,36,36}}
 }
 
+-- Helper function to make trees fall and fade away
+local function MakeTreeFall(ent)
+    if not IsValid(ent) then return end
+    
+    -- Convert to physics object and make it fall
+    ent:SetMoveType(MOVETYPE_VPHYSICS)
+    ent:SetSolid(SOLID_VPHYSICS) -- Keep solid for world collision
+    ent:PhysicsInit(SOLID_VPHYSICS)
+    ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS) -- Don't collide with players but still with world
+    
+    local phys = ent:GetPhysicsObject()
+    if IsValid(phys) then
+        phys:Wake()
+        phys:SetMass(500) -- Make it heavy enough to fall nicely
+        -- Add a slight random impulse to make it fall in a direction
+        local impulse = Vector(math.random(-200, 200), math.random(-200, 200), -100)
+        phys:ApplyForceCenter(impulse)
+    end
+    
+    -- Start transparency fade after 2 seconds
+    timer.Simple(2, function()
+        if IsValid(ent) then
+            local alpha = 255
+            local fadeTimer = "tree_fade_" .. ent:EntIndex()
+            
+            timer.Create(fadeTimer, 0.1, 30, function()
+                if IsValid(ent) then
+                    alpha = alpha - 8.5 -- Fade over 3 seconds (30 * 0.1 = 3s)
+                    ent:SetColor(Color(255, 255, 255, math.max(0, alpha)))
+                    ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+                    
+                    if alpha <= 0 then
+                        timer.Remove(fadeTimer)
+                        ent:Remove()
+                    end
+                else
+                    timer.Remove(fadeTimer)
+                end
+            end)
+        end
+    end)
+end
+
 hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local ply = dmg:GetAttacker()
     if not IsValid(ply) or not ply:IsPlayer() then return end
@@ -149,8 +192,11 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
 
         ply:GiveItem("wood", reward)
         ply:SyncInventory()
+        ply:SendNotification("Wood", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
 
-        if ent.treeHealth <= 0 then ent:Remove() end
+        if ent.treeHealth <= 0 then
+            MakeTreeFall(ent)
+        end
         return
     end
 
@@ -158,6 +204,7 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
         local animalFatReward = math.random(1, 3) -- Give 1-3 animal fat per hit
         ply:GiveItem("fat.animal", animalFatReward)
         ply:SyncInventory()
+        ply:SendNotification("Animal Fat", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. animalFatReward)
         return
     end
 
@@ -181,6 +228,7 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local itemName = itemData and itemData:GetName() or itemClass
 
     ply:GiveItem(seq.item, reward)
+    ply:SendNotification(itemName, NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
 
     if ent.oreHealth <= 0 then
         local pos = ent:GetPos()
