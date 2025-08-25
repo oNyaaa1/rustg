@@ -50,6 +50,24 @@ net.Receive("BuildingPlan.ChangeBuilding", function(len, ply)
     end
 end)
 
+function SWEP:GetNumberOfPositionzz(ent, owner)
+    local Position = math.NormalizeAngle(owner:GetAngles().y - ent:GetAngles().y)
+    if Position < 0 then Position = Position + 360 end
+    if Position >= 315 or Position < 45 then
+        print(315)
+        return ent:GetForward() * 128
+    elseif Position >= 45 and Position < 135 then
+        print(45)
+        return -ent:GetRight() * 128
+    elseif Position >= 135 and Position < 225 then
+        print(135)
+        return -ent:GetForward() * 128
+    elseif Position >= 225 and Position < 315 then
+        print(225)
+        return ent:GetRight() * 128
+    end
+end
+
 function SWEP:Think()
     if buildingsTable[self:GetNetworkedString("selectedBuilding")] == nil then self:SetNetworkedString("selectedBuilding", "foundation") end
     if not self:GetNetworkedBool("attack") then
@@ -101,16 +119,13 @@ function SWEP:Think()
 
         if self:GetNetworkedString("selectedBuilding") ~= nil then
             local vectornewpos = trace.HitPos + buildingsTable[self:GetNetworkedString("selectedBuilding")]["pos"]
-            if buildingsTable[self:GetNetworkedString("selectedBuilding")]["parent"] ~= nil then
-                if IsValid(curEnt) then
-                    if curEnt:GetNetworkedString("buildingtype") == self:GetNetworkedString("selectedBuilding") then
-                        -- РСЃРїРѕР»СЊР·СѓРµРј РЅРѕРІСѓСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ РїРѕР·РёС†РёР№
-                        local parentType = curEnt:GetNetworkedString("buildingtype")
-                        local positionNumber = GetNumberOfPosition(self:GetOwner():GetAngles())
-                        local buildingPos, buildingAngle = GetBuildingPosition(self:GetNetworkedString("selectedBuilding"), parentType, positionNumber)
-                        vectornewpos = trace.HitPos + buildingPos + buildingsTable[self:GetNetworkedString("selectedBuilding")]["pos"]
-                    end
-                end
+            if buildingsTable[self:GetNetworkedString("selectedBuilding")]["parent"] ~= nil and IsValid(curEnt) and curEnt:GetNetworkedString("buildingtype") == self:GetNetworkedString("selectedBuilding") and not HasParent(self:GetNetworkedString("selectedBuilding"), curEnt:GetNetworkedString("buildingtype")) then
+                -- РСЃРїРѕР»СЊР·СѓРµРј РЅРѕРІСѓСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ РїРѕР·РёС†РёР№
+                local parentType = curEnt:GetNetworkedString("buildingtype")
+                local positionNumber = GetNumberOfPosition(self:GetOwner():GetAngles())
+                local buildingPos, buildingAngle = GetBuildingPosition(self:GetNetworkedString("selectedBuilding"), parentType, positionNumber)
+                vectornewpos = trace.HitPos + buildingPos + buildingsTable[self:GetNetworkedString("selectedBuilding")]["pos"]
+                print("test")
             end
 
             if self:GetOwner():GetPos():Distance(vectornewpos) > self.workDistance then vectornewpos = self:GetOwner():EyePos() + self:GetOwner():EyeAngles():Forward() * self.workDistance end
@@ -123,21 +138,23 @@ function SWEP:Think()
                         local positionNumber = GetNumberOfPosition(self:GetOwner():GetAngles())
                         local buildingPos, buildingAngle = GetBuildingPosition(self:GetNetworkedString("selectedBuilding"), parentType, positionNumber)
                         local buildPos = curEnt:GetPos() + buildingPos
-                        if CheckPosition(self:GetNetworkedString("selectedBuilding"), curEnt, buildPos, buildingsTable[self:GetNetworkedString("selectedBuilding")]["colradius"]) then
-                            local building = ents.Create("rust_building")
-                            building:SetModel(buildingsTable[self:GetNetworkedString("selectedBuilding")]["model"])
-                            building:SetPos(buildPos)
-                            if buildingsTable[self:GetNetworkedString("selectedBuilding")]['material'] ~= nil then building:SetMaterial(buildingsTable[self:GetNetworkedString("selectedBuilding")]['material']) end
-                            building:SetAngles(curEnt:GetAngles() + buildingAngle)
-                            building:SetNetworkedString("buildingtype", self:GetNetworkedString("selectedBuilding"))
-                            building:SetNetworkedString("buildtier", "twig")
-                            building.player = self:GetOwner()
-                            building:SetNetworkedString("parent", curEnt)
-                            building:Spawn()
-                            building:SetMaxHealth(100)
-                            building:SetHealth(100)
-                            self:GetOwner():EmitSound("zohart/building/hammer-saw-" .. math.random(1, 3) .. ".wav")
-                        end
+                        local pos = self:GetNumberOfPositionzz(curEnt, self:GetOwner())
+                        --if CheckPosition(self:GetNetworkedString("selectedBuilding"), curEnt, buildPos, buildingsTable[self:GetNetworkedString("selectedBuilding")]["colradius"]) then
+                        local building = ents.Create("rust_building")
+                        building:SetModel(buildingsTable[self:GetNetworkedString("selectedBuilding")]["model"])
+                        building:SetPos(curEnt:GetPos() + pos)
+                        if buildingsTable[self:GetNetworkedString("selectedBuilding")]['material'] ~= nil then building:SetMaterial(buildingsTable[self:GetNetworkedString("selectedBuilding")]['material']) end
+                        building:SetAngles(curEnt:GetAngles() + buildingAngle)
+                        building:SetNetworkedString("buildingtype", self:GetNetworkedString("selectedBuilding"))
+                        building:SetNetworkedString("buildtier", "twig")
+                        building.player = self:GetOwner()
+                        building:SetNetworkedString("parent", curEnt)
+                        building:Spawn()
+                        building:SetMaxHealth(100)
+                        building:SetHealth(100)
+                        self:GetOwner():EmitSound("zohart/building/hammer-saw-" .. math.random(1, 3) .. ".wav")
+                        --end
+                        print("test2")
                     end
                 else
                     if HasParent(self:GetNetworkedString("selectedBuilding"), 'map') then
@@ -154,6 +171,8 @@ function SWEP:Think()
                             building:SetHealth(100)
                             self:GetOwner():EmitSound("zohart/building/hammer-saw-" .. math.random(1, 3) .. ".wav")
                         end
+
+                        print("test3")
                     end
                 end
             else

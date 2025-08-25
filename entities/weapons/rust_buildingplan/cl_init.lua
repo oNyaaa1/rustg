@@ -35,6 +35,7 @@ local function GetBuildingPositionAndAngle(buildingType, parentType, positionNum
     if GetPositionsForParent then
         local positions = GetPositionsForParent(buildingType, parentType)
         if positions and positions[positionNumber] then
+           
             return positions[positionNumber]["position"], positions[positionNumber]["angle"]
         end
     end
