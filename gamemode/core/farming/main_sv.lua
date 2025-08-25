@@ -34,8 +34,8 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
     end
 
     local isCreature = CREATURES_ENTITIES[ent:GetClass()]
-    if isCreature then
-        Logger("Player " .. ply:GetName() .. " is mining a creature.")
+    if ent.isCreatureCorpse then
+        Logger("Player " .. ply:GetName() .. " is mining a creature corpse.")
         gRust.Mining.MineCreatures(ply, ent, weapon, class)
     end
 
@@ -44,4 +44,15 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
         gRust.Mining.MineOres(ply, ent, weapon, class)
     end
 
+end)
+
+-- Hook to spawn corpses when creatures die naturally
+hook.Add("OnNPCKilled", "gRust.CreatureCorpses", function(npc, attacker, inflictor)
+    if CREATURES_ENTITIES[npc:GetClass()] then
+        Logger("Creature died naturally, spawning corpse")
+        -- Import the function from wildlife_sv.lua
+        if gRust.Mining and gRust.Mining.SpawnCreatureCorpse then
+            gRust.Mining.SpawnCreatureCorpse(npc)
+        end
+    end
 end)
