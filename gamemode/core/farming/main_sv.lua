@@ -29,18 +29,28 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
 
     local maxHP = TREE_MODELS[ent:GetModel()]
     if maxHP then
-        Logger("Player " .. ply:GetName() .. " is mining a tree.")
+        local validTool = gRust.Mining.IsValidWoodcuttingTool(class)
+        if not validTool then
+            dmg:SetDamage(0)
+            return true
+        end
+        LoggerPlayer(ply, "is damaging a tree")
         gRust.Mining.MineTrees(ply, ent, maxHP, weapon, class)
     end
 
     local isCreature = CREATURES_ENTITIES[ent:GetClass()]
     if ent.isCreatureCorpse then
-        Logger("Player " .. ply:GetName() .. " is mining a creature corpse.")
+        LoggerPlayer(ply, "is damaging a creature corpse.")
         gRust.Mining.MineCreatures(ply, ent, weapon, class)
     end
 
     if ent:GetClass() == "rust_ore" then
-        Logger("Player " .. ply:GetName() .. " is mining ore.")
+        local validTool = gRust.Mining.IsValidMiningTool(class)
+        if not validTool then
+            return true
+        end
+
+        LoggerPlayer(ply, "is mining ore.")
         gRust.Mining.MineOres(ply, ent, weapon, class)
     end
 

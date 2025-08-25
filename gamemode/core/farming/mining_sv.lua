@@ -36,6 +36,11 @@ local ORE_SEQ = {
     }
 }
 
+-- Function to check if a weapon is a valid mining tool
+gRust.Mining.IsValidMiningTool = function(weaponClass)
+    return ORE_WEAPONS[weaponClass] ~= nil
+end
+
 gRust.Mining.MineOres = function(ply, ent, weapon, class)
     local tool = ORE_WEAPONS[class]
     if not tool then return end

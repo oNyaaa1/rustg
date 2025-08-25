@@ -20,6 +20,10 @@ local WOOD_WEAPONS = {
 
 local WOOD_SEQ = {6, 14, 22, 32, 43, 55, 68, 83, 99, 128}
 
+-- Function to check if a weapon is a valid woodcutting tool
+gRust.Mining.IsValidWoodcuttingTool = function(weaponClass)
+    return WOOD_WEAPONS[weaponClass] ~= nil
+end
 
 -- Helper function to make trees fall and fade away
 local function MakeTreeFall(ent)

@@ -33,7 +33,7 @@ function ENT:Use(activator, caller)
     if activator:GiveItem("cloth", 10) then
         activator:SendNotification("Cloth", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. 10)
         activator:EmitSound(gRust.RandomGroupedSound(string.format("pickup.%s","cloth")))
-        
+        LoggerPlayer(activator, "picked up cloth.")
         self.CurrentUses = self.CurrentUses + 1
 
         if self.CurrentUses >= self.MaxUses then
