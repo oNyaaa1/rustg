@@ -149,6 +149,7 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
 
         ply:GiveItem("wood", reward)
         ply:SyncInventory()
+        ply:SendNotification("Wood", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
 
         if ent.treeHealth <= 0 then ent:Remove() end
         return
@@ -158,6 +159,7 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
         local animalFatReward = math.random(1, 3) -- Give 1-3 animal fat per hit
         ply:GiveItem("fat.animal", animalFatReward)
         ply:SyncInventory()
+        ply:SendNotification("Animal Fat", NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. animalFatReward)
         return
     end
 
@@ -181,6 +183,7 @@ hook.Add("EntityTakeDamage","gRust.ResourceHits",function(ent,dmg)
     local itemName = itemData and itemData:GetName() or itemClass
 
     ply:GiveItem(seq.item, reward)
+    ply:SendNotification(itemName, NOTIFICATION_PICKUP, "materials/icons/pickup.png", "+" .. reward)
 
     if ent.oreHealth <= 0 then
         local pos = ent:GetPos()
