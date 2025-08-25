@@ -99,12 +99,3 @@ function ENT:ScheduleRespawn()
     
     gRust.CreateRespawn("rust_roadsign", pos, ang, respawnTime)
 end
-
-function ENT:SetupDataTables()
-    self:NetworkVar("Float", 0, "Health")
-    self:NetworkVar("Float", 1, "MaxHealth")
-end
-
-function ENT:GetDisplayName()
-    return "Road Sign"
-end
