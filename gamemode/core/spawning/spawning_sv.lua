@@ -127,6 +127,26 @@ function SpawningSystem.SpawnHemp()
     Logger("[Spawning] Spawned " .. spawnedCount .. " hemp plants (" .. pairCount .. " pairs)")
 end
 
+function SpawningSystem.SpawnOrePickups()
+    local positions = FindRandomPlacesOnMap(RANDOM_SPAWNS)
+    local spawnedCount = 0
+    
+    for _, pos in pairs(positions) do
+        if not isvector(pos) then continue end
+        
+        local ent = ents.Create("rust_orepickup")
+        if IsValid(ent) then
+            ent:SetPos(pos)
+            ent:Spawn()
+            ent:Activate()
+            ent:DropToFloor()
+            spawnedCount = spawnedCount + 1
+        end
+    end
+    
+    Logger("[Spawning] Spawned " .. spawnedCount .. " ore pickups")
+end
+
 -- Spawn roadsigns
 function SpawningSystem.SpawnRoadSigns()
     local spawnedCount = 0
@@ -173,8 +193,12 @@ function SpawningSystem.SpawnAll()
     timer.Simple(3, function()
         SpawningSystem.SpawnRoadSigns()
     end)
-    
+
     timer.Simple(4, function()
+        SpawningSystem.SpawnOrePickups()
+    end)
+
+    timer.Simple(5, function()
         Logger("[Spawning] All entity spawning completed!")
     end)
 end

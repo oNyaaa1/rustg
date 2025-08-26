@@ -56,8 +56,7 @@ function ENT:Use(activator, caller)
                 end
             end)
         end
-    else
-        activator:ChatPrint("")
+
     end
 end
 
