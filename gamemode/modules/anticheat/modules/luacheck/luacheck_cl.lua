@@ -7,9 +7,11 @@ jit.attach(function(fn)
     local source = info.source
     local sourceIndex = string.gmatch(source, "@%w+/%w+")()
     if sourceIndex == nil or not AllowedSources[sourceIndex] then
-        net.Start(gRust.AC.NetCode)
-        net.WriteString("Unknown source: " .. (sourceIndex or source or "Unknown"))
-        net.SendToServer()
+        if gRust.AC and gRust.AC.NetCode then
+            net.Start(gRust.AC.NetCode)
+            net.WriteString("Unknown source: " .. (sourceIndex or source or "Unknown"))
+            net.SendToServer()
+        end
         print(sourceIndex, source)
     end
 end, "bc")
@@ -41,9 +43,11 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
     for i = 1, #DisallowedGlobals do
         local global = DisallowedGlobals[i]
         if _G[global] then
-            net.Start(gRust.AC.NetCode)
-            net.WriteString("Disallowed global: " .. global)
-            net.SendToServer()
+            if gRust.AC and gRust.AC.NetCode then
+                net.Start(gRust.AC.NetCode)
+                net.WriteString("Disallowed global: " .. global)
+                net.SendToServer()
+            end
             print(global)
         end
     end
@@ -58,9 +62,11 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
 
         local inf = debug.getinfo(func)
         if inf.source ~= source then
-            net.Start(gRust.AC.NetCode)
-            net.WriteString("JIT Check (" .. funcName .. ")")
-            net.SendToServer()
+            if gRust.AC and gRust.AC.NetCode then
+                net.Start(gRust.AC.NetCode)
+                net.WriteString("JIT Check (" .. funcName .. ")")
+                net.SendToServer()
+            end
             print(funcName)
         end
     end
@@ -68,9 +74,11 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
     local hooks = hook.GetTable()
     for hookName, v in pairs(hooks) do
         if DisallowedHooks[hookName] then
-            net.Start(gRust.AC.NetCode)
-            net.WriteString("Disallowed hook: " .. hookName)
-            net.SendToServer()
+            if gRust.AC and gRust.AC.NetCode then
+                net.Start(gRust.AC.NetCode)
+                net.WriteString("Disallowed hook: " .. hookName)
+                net.SendToServer()
+            end
             print(hookName)
         end
     end
