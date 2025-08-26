@@ -209,9 +209,10 @@ local function DrawEntityDisplay()
 
 		surface.SetDrawColor(255, 255, 255, Alpha)
 
-		surface.SetMaterial(LookingEnt.DisplayIcon)
-
-		surface.DrawTexturedRect(scrw * 0.5 - IS * 0.5, scrh * 0.435 - IS * 0.5, IS, IS)
+		if LookingEnt.DisplayIcon then
+			surface.SetMaterial(LookingEnt.DisplayIcon)
+			surface.DrawTexturedRect(scrw * 0.5 - IS * 0.5, scrh * 0.435 - IS * 0.5, IS, IS)
+		end
 
 
 
