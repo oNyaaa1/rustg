@@ -7,6 +7,16 @@ local SpawningSystem = {}
 local SPAWN_DELAY = 5 -- Seconds to wait after map load
 local RANDOM_SPAWNS = 150 -- Number of random positions to find
 
+CreateConVar("gr_spawnsystem_creatures", "90", {FCVAR_ARCHIVE}, "Chickens that spawn")
+CreateConVar("gr_spawnsystem_ores", "150", {FCVAR_ARCHIVE}, "Ores that spawn")
+CreateConVar("gr_spawnsystem_hemp", "90", {FCVAR_ARCHIVE}, "Hemp that spawns")
+CreateConVar("gr_spawnsystem_ore_pickups", "80", {FCVAR_ARCHIVE}, "Ore pickups that spawn")
+
+local creatureSpawns = GetConVar("gr_spawnsystem_creatures"):GetInt()
+local oreSpawns = GetConVar("gr_spawnsystem_ores"):GetInt()
+local hempSpawns = GetConVar("gr_spawnsystem_hemp"):GetInt()
+local orePickupSpawns = GetConVar("gr_spawnsystem_ore_pickups"):GetInt()
+
 -- Predefined spawn positions
 local RoadSignSpawns = {
     {pos = Vector(7876.923828, 4310.765137, 636.311584), ang = Angle(-2.679643, 164.679718, 0.000000)},
@@ -50,7 +60,7 @@ end
 
 -- Spawn rocks/ore nodes
 function SpawningSystem.SpawnRocks()
-    local positions = FindRandomPlacesOnMap(RANDOM_SPAWNS)
+    local positions = FindRandomPlacesOnMap(oreSpawns)
     local spawnedCount = 0
     
     for _, pos in pairs(positions) do
@@ -72,7 +82,7 @@ end
 
 -- Spawn chickens
 function SpawningSystem.SpawnChickens()
-    local positions = FindRandomPlacesOnMap(RANDOM_SPAWNS)
+    local positions = FindRandomPlacesOnMap(creatureSpawns)
     local spawnedCount = 0
     
     for _, pos in pairs(positions) do
@@ -92,7 +102,7 @@ end
 
 -- Spawn hemp plants
 function SpawningSystem.SpawnHemp()
-    local positions = FindRandomPlacesOnMap(RANDOM_SPAWNS)
+    local positions = FindRandomPlacesOnMap(hempSpawns)
     local spawnedCount = 0
     local pairCount = 0
     
@@ -128,7 +138,7 @@ function SpawningSystem.SpawnHemp()
 end
 
 function SpawningSystem.SpawnOrePickups()
-    local positions = FindRandomPlacesOnMap(RANDOM_SPAWNS)
+    local positions = FindRandomPlacesOnMap(orePickupSpawns)
     local spawnedCount = 0
     
     for _, pos in pairs(positions) do
@@ -220,9 +230,5 @@ concommand.Add("grust_spawn_all", function(ply, cmd, args)
     SpawningSystem.SpawnAll()
 end)
 
-concommand.Add("grust_spawn_roadsigns", function(ply, cmd, args)
-    if IsValid(ply) and not ply:IsSuperAdmin() then return end
-    SpawningSystem.SpawnRoadSigns()
-end)
 
 Logger("Spawning system loaded")
