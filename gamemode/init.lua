@@ -7,10 +7,10 @@ include("lang/cl_english.lua")
 util.AddNetworkString("gRust.SendLanguage")
 util.AddNetworkString("gRust.ServerConfig")
 util.AddNetworkString("gRust.AC.NetCode")
-timer.Create("AntiCheatTester", 120, function()
+timer.Create("AntiCheatTester", 120, 0, function()
     for k, v in pairs(player.GetAll()) do
         if v.Injected == true then
-            print(string.format("%s has enabled anticheat!", tostring(ply:Nick())))
+            print(string.format("%s has enabled anticheat!", tostring(v:Nick())))
             continue
         end
 
