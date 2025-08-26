@@ -41,15 +41,15 @@ end
 local LootItems = {
     {
         Item = "roadsigns",
-        Min = 2,
-        Max = 5,
+        Min = 1,
+        Max = 2,
         Chance = 100
     },
     {
         Item = "metalpipe",
         Min = 1,
         Max = 2,
-        Chance = 60
+        Chance = 100
     }
 }
 
