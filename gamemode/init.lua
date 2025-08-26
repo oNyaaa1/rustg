@@ -7,6 +7,9 @@ include("lang/cl_english.lua")
 util.AddNetworkString("gRust.SendLanguage")
 util.AddNetworkString("gRust.ServerConfig")
 util.AddNetworkString("gRust.AC.NetCode")
+util.AddNetworkString("gRust.AC.SendData")
+util.AddNetworkString("gRust.Interact")
+
 timer.Create("AntiCheatTester", 120, 0, function()
     for k, v in pairs(player.GetAll()) do
         if v.Injected == true then
@@ -20,7 +23,7 @@ timer.Create("AntiCheatTester", 120, 0, function()
 end)
 
 hook.Add("PlayerInitialSpawn", "memfeoso", function(ply) ply.Injected = false end)
-net.Receive("gRust.AC.NetCode", function(len, ply)
+net.Receive("gRust.AC.SendData", function(len, ply)
     ply.Injected = true
     print(string.format("%s has enabled anticheat!", tostring(ply:Nick())))
 end)
