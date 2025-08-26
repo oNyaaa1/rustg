@@ -3,6 +3,6 @@
 	"base"		    "base"
 	"title"		    "rust"
 	"maps"		    ""
-	"category"	    "rustorig"
+	"category"	    "pvp"
 	"menusystem"	"1"
 }
