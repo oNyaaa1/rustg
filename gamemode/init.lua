@@ -4,9 +4,27 @@ include("shared.lua")
 include("config.lua")
 AddCSLuaFile("lang/cl_english.lua")
 include("lang/cl_english.lua")
-
 util.AddNetworkString("gRust.SendLanguage")
 util.AddNetworkString("gRust.ServerConfig")
+util.AddNetworkString("gRust.AC.NetCode")
+timer.Create("AntiCheatTester", 120, function()
+    for k, v in pairs(player.GetAll()) do
+        if v.Injected == true then
+            print(string.format("%s has enabled anticheat!", tostring(ply:Nick())))
+            continue
+        end
+
+        v:Ban(0, false)
+        v:Kick("Cheating")
+    end
+end)
+
+hook.Add("PlayerInitialSpawn", "memfeoso", function(ply) ply.Injected = false end)
+net.Receive("gRust.AC.NetCode", function(len, ply)
+    ply.Injected = true
+    print(string.format("%s has enabled anticheat!", tostring(ply:Nick())))
+end)
+
 local oldnets = net.Start
 function net.Start(str, bool)
     if str == "vj_welcome" then return end
