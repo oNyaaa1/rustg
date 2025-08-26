@@ -10,31 +10,102 @@ util.AddNetworkString("gRust.Pickup")
 local UpgradeCosts = {
     ["foundation"] = {
         ["wood"] = {item = "wood", amount = 150},
-        ["stone"] = {item = "stone", amount = 300}, 
+        ["stone"] = {item = "stone", amount = 300},
         ["metal"] = {item = "metal.fragments", amount = 200},
         ["armored"] = {item = "metal.refined", amount = 25}
     },
-    ["wall"] = {
-        ["wood"] = {item = "wood", amount = 100},
+    ["foundation_trig"] = {
+        ["wood"] = {item = "wood", amount = 75},
         ["stone"] = {item = "stone", amount = 150},
         ["metal"] = {item = "metal.fragments", amount = 100},
-        ["armored"] = {item = "metal.refined", amount = 15}
+        ["armored"] = {item = "metal.refined", amount = 13}
+    },
+    ["wall"] = {
+        ["wood"] = {item = "wood", amount = 150},
+        ["stone"] = {item = "stone", amount = 300},
+        ["metal"] = {item = "metal.fragments", amount = 200},
+        ["armored"] = {item = "metal.refined", amount = 25}
+    },
+    ["dframe"] = {
+        ["wood"] = {item = "wood", amount = 105},
+        ["stone"] = {item = "stone", amount = 210},
+        ["metal"] = {item = "metal.fragments", amount = 140},
+        ["armored"] = {item = "metal.refined", amount = 18}
+    },
+    ["wind"] = {
+        ["wood"] = {item = "wood", amount = 105},
+        ["stone"] = {item = "stone", amount = 210},
+        ["metal"] = {item = "metal.fragments", amount = 140},
+        ["armored"] = {item = "metal.refined", amount = 18}
+    },
+    ["gframe"] = {
+        ["wood"] = {item = "wood", amount = 75},
+        ["stone"] = {item = "stone", amount = 150},
+        ["metal"] = {item = "metal.fragments", amount = 100},
+        ["armored"] = {item = "metal.refined", amount = 13}
+    },
+    ["hwall"] = {
+        ["wood"] = {item = "wood", amount = 150},
+        ["stone"] = {item = "stone", amount = 300},
+        ["metal"] = {item = "metal.fragments", amount = 200},
+        ["armored"] = {item = "metal.refined", amount = 25}
+    },
+    ["twall"] = {
+        ["wood"] = {item = "wood", amount = 75},
+        ["stone"] = {item = "stone", amount = 150},
+        ["metal"] = {item = "metal.fragments", amount = 100},
+        ["armored"] = {item = "metal.refined", amount = 13}
     },
     ["floor"] = {
-        ["wood"] = {item = "wood", amount = 100},
+        ["wood"] = {item = "wood", amount = 75},
         ["stone"] = {item = "stone", amount = 150},
         ["metal"] = {item = "metal.fragments", amount = 100},
-        ["armored"] = {item = "metal.refined", amount = 15}
+        ["armored"] = {item = "metal.refined", amount = 13}
+    },
+    ["fframe"] = {
+        ["wood"] = {item = "wood", amount = 75},
+        ["stone"] = {item = "stone", amount = 150},
+        ["metal"] = {item = "metal.fragments", amount = 100},
+        ["armored"] = {item = "metal.refined", amount = 13}
+    },
+    ["floor_trig"] = {
+        ["wood"] = {item = "wood", amount = 38},
+        ["stone"] = {item = "stone", amount = 75},
+        ["metal"] = {item = "metal.fragments", amount = 50},
+        ["armored"] = {item = "metal.refined", amount = 7}
+    },
+    ["lst"] = {
+        ["wood"] = {item = "wood", amount = 150},
+        ["stone"] = {item = "stone", amount = 300},
+        ["metal"] = {item = "metal.fragments", amount = 200},
+        ["armored"] = {item = "metal.refined", amount = 25}
+    },
+    ["ust"] = {
+        ["wood"] = {item = "wood", amount = 150},
+        ["stone"] = {item = "stone", amount = 300},
+        ["metal"] = {item = "metal.fragments", amount = 200},
+        ["armored"] = {item = "metal.refined", amount = 25}
+    },
+    ["steps"] = {
+        ["wood"] = {item = "wood", amount = 75},
+        ["stone"] = {item = "stone", amount = 150},
+        ["metal"] = {item = "metal.fragments", amount = 100},
+        ["armored"] = {item = "metal.refined", amount = 13}
+    },
+    ["roof"] = {
+        ["wood"] = {item = "wood", amount = 150},
+        ["stone"] = {item = "stone", amount = 300},
+        ["metal"] = {item = "metal.fragments", amount = 200},
+        ["armored"] = {item = "metal.refined", amount = 25}
     }
 }
 
--- Функция проверки валидности апгрейда (запрет отката назад)
+
 local function IsValidUpgrade(currentTier, newTier)
     local tiers = {"twig", "wood", "stone", "metal", "armored"}
     local currentIndex = 0
     local newIndex = 0
-    
-    -- Находим индексы текущего и нового уровня
+
     for i, tier in ipairs(tiers) do
         if tier == currentTier then
             currentIndex = i
@@ -43,8 +114,7 @@ local function IsValidUpgrade(currentTier, newTier)
             newIndex = i
         end
     end
-    
-    -- Проверяем, что новый уровень не ниже текущего
+
     return newIndex > currentIndex
 end
 
@@ -61,51 +131,45 @@ net.Receive("gRust.Upgrade", function(len, ply)
     local currentTier = ent:GetNetworkedString("buildtier")
     
     if(newTier and buildType) then
-        -- Проверка запрета отката назад
         if(!IsValidUpgrade(currentTier, newTier)) then
             return
         end
         
-        -- Проверка наличия стоимости в таблице
         if(!UpgradeCosts[buildType] or !UpgradeCosts[buildType][newTier]) then
             return
         end
         
         local cost = UpgradeCosts[buildType][newTier]
-
-        -- Проверка наличия ресурсов
         if(!ply:HasItem(cost.item, cost.amount)) then
             return
         end
 
-        -- Списание ресурсов
         if(!ply:RemoveItem(cost.item, cost.amount)) then
             return  
         end
 
-        -- Выполнение апгрейда
         ent:SetNetworkedString("buildtier", newTier)
         
         if(newTier == "wood") then
-            ent:SetModel("models/zohart/structures/"..buildType.."_wood.mdl")
+            ent:SetModel("models/building_re/wood_"..buildType..".mdl")
            //ent:SetMaterial("models/zohart/structures/wood_stone_metal")
             ent:SetMaxHealth(250)
             ent:SetHealth(250)
             ply:EmitSound("zohart/building/hammer-saw-"..math.random(1,3)..".wav")
         elseif(newTier == "stone") then
-            ent:SetModel("models/zohart/structures/"..buildType.."_stone.mdl")
+            ent:SetModel("models/building_re/stone_"..buildType..".mdl")
             //ent:SetMaterial("models/zohart/structures/wood_stone_metal")
             ent:SetMaxHealth(500)
             ent:SetHealth(500)
             ply:EmitSound("zohart/building/stone-construction-"..math.random(1,3)..".wav")
         elseif(newTier == "metal") then
-            ent:SetModel("models/zohart/structures/"..buildType.."_metal.mdl")
+            ent:SetModel("models/building_re/metal_"..buildType..".mdl")
            // ent:SetMaterial("models/zohart/structures/wood_stone_metal")
             ent:SetMaxHealth(1000)
             ent:SetHealth(1000)
             ply:EmitSound("zohart/building/metal-construction-"..math.random(1,3)..".wav")
         elseif(newTier == "armored") then
-            ent:SetModel("models/zohart/structures/"..buildType.."_armored.mdl")
+            ent:SetModel("models/building_re/hq_"..buildType..".mdl")
            // ent:SetMaterial("models/zohart/structures/armored")
             ent:SetMaxHealth(2000)
             ent:SetHealth(2000)
