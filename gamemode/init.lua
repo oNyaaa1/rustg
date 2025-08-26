@@ -13,10 +13,10 @@ util.AddNetworkString("gRust.Interact")
 timer.Create("AntiCheatTester", 120, 0, function()
     for k, v in pairs(player.GetAll()) do
         if v.Injected == true then
-            print(string.format("%s has enabled anticheat!", tostring(v:Nick())))
             continue
         end
 
+        LoggerPlayer(v, "was banned for not injecting the anticheat")
         v:Ban(0, false)
         v:Kick("Cheating")
     end
@@ -25,7 +25,7 @@ end)
 hook.Add("PlayerInitialSpawn", "memfeoso", function(ply) ply.Injected = false end)
 net.Receive("gRust.AC.SendData", function(len, ply)
     ply.Injected = true
-    print(string.format("%s has enabled anticheat!", tostring(ply:Nick())))
+    LoggerPlayer(ply, "has enabled anticheat")
 end)
 
 local oldnets = net.Start
