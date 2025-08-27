@@ -1,47 +1,66 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
+
 include("shared.lua")
 
-util.AddNetworkString("rust_keylock_sound")
-
 function ENT:Initialize()
-    self:SetModel(self.Deploy.Model or "models/deployable/key_lock.mdl")
-    self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:PhysicsInit(SOLID_VPHYSICS)
-
-    local phys = self:GetPhysicsObject()
-    if IsValid(phys) then
-        phys:Wake()
-        //phys:EnableMotion(true) -- lock in place
-    end
-
-    self.Locked = true
-    self.Authorized = {} -- table of SteamIDs authorized
+    self:SetModel("models/deployable/key_lock.mdl")
+    self:SetMoveType(MOVETYPE_NONE)
+    self:SetSolid(SOLID_NONE)
+    self:SetCollisionGroup(COLLISION_GROUP_NONE)
+    
+    self.Authorized = {}
+    self.ManualAuthorization = true
+    self.AuthorizeOnDeploy = true
 end
 
--- Allow players to press USE on the lock
-function ENT:Use(ply)
-    if not IsValid(ply) or not ply:IsPlayer() then return end
+function ENT:SetAuthorizeEntity(ent)
+    self.AuthorizeEntity = ent
+end
 
-    local sid = ply:SteamID()
+function ENT:GetAuthorizeEntity()
+    return self.AuthorizeEntity
+end
 
-    if self.Authorized[sid] then
-        -- If already authorized, toggle lock state
-        self.Locked = not self.Locked
-        self:PlayLockSound(self.Locked and "doors/door_locked2.wav" or "doors/door_latch3.wav")
-    else
-        -- If not authorized, add them (like putting a key in the lock)
-        self.Authorized[sid] = true
-        self:PlayLockSound("buttons/button14.wav")
-        ply:ChatPrint("You are now authorized to use this lock.")
+function ENT:Authorize(pl)
+    if not IsValid(pl) then return end
+    self.Authorized[pl:SteamID()] = true
+end
+
+function ENT:Unauthorize(pl)
+    if not IsValid(pl) then return end
+    self.Authorized[pl:SteamID()] = nil
+end
+
+function ENT:IsAuthorized(pl)
+    if not IsValid(pl) then return false end
+    return self.Authorized[pl:SteamID()] == true
+end
+
+function ENT:ClearAuthorization()
+    self.Authorized = {}
+end
+
+function ENT:OnRemove()
+    local parent = self:GetParent()
+    if IsValid(parent) then
+        parent:SetNW2Bool("gRust.InUse", false)
+        if parent.SetBodygroup then
+            parent:SetBodygroup(2, 0)
+        end
+        if parent.ClearAuthorization then
+            parent:ClearAuthorization()
+        end
     end
 end
 
--- Helper to play sounds on client
-function ENT:PlayLockSound(soundName)
-    net.Start("rust_keylock_sound")
-        net.WriteEntity(self)
-        net.WriteString(soundName)
-    net.Broadcast()
+function ENT:Interact(pl)
+    if not IsValid(pl) then return end
+    
+    local parent = self:GetParent()
+    if not IsValid(parent) then return end
+    
+    if parent.Interact then
+        parent:Interact(pl)
+    end
 end
