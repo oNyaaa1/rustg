@@ -366,8 +366,7 @@ function ENT:ConstructInventory(panel, data, rows)
             draw.SimpleText(name, "gRust.38px", w * 0.01, h * 0.5, Color(255, 255, 255, 200), 0, 1)
         end
     end
-
-    CreateRow("Output")
+    
     CreateRow("Furnace")
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
     if distance > 200 then
