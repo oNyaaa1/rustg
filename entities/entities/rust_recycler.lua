@@ -315,10 +315,11 @@ function ENT:ConstructInventory(panel, data, rows)
 
     upd = data.entity
 end
+/*
 
 timer.Create("gRust.RecyclerCheck", 1, 0, function()
     if upd == nil then return end
     net.Start("gRust.Inventory.Request")
     net.WriteEntity(upd)
     net.SendToServer()
-end)
+end)*/

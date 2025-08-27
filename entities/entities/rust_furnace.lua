@@ -25,6 +25,10 @@ ENT.CharcoalProduction = {
 }
 
 ENT.ProcessItems = {
+    ["wood"] = {
+        item = "charcoal",
+        amount = 1,
+    },
     ["sulfur.ore"] = {
         item = "sulfur",
         amount = 1,
@@ -47,7 +51,7 @@ function ENT:Initialize()
     self:PhysicsInitStatic(SOLID_VPHYSICS)
     self:SetSolid(SOLID_VPHYSICS)
     self:SetInteractable(true)
-    self:CreateInventory(6)
+    self:CreateInventory(12)
     self:SetSaveItems(true)
     self:SetDamageable(true)
     self:SetHealth(500)
@@ -224,8 +228,8 @@ function ENT:CompleteProcess()
             local recipe = self.ProcessItems[item:GetItem()]
             local charcoalProduced = self:GetCharcoalProductionForItem(itemData.type)
             if recipe and recipe.item and recipe.amount then
-                local canAddResult = self:FindEmptySlot(1, 6, gRust.CreateItem(recipe.item, recipe.amount)) ~= nil
-                local canAddCharcoal = self:FindEmptySlot(1, 6, gRust.CreateItem("charcoal", charcoalProduced)) ~= nil
+                local canAddResult = self:FindEmptySlot(7, 12, gRust.CreateItem(recipe.item, recipe.amount)) ~= nil
+                local canAddCharcoal = self:FindEmptySlot(7, 12, gRust.CreateItem("charcoal", charcoalProduced)) ~= nil
                 if canAddResult and canAddCharcoal then
                     item:RemoveQuantity(1)
                     if item:GetQuantity() <= 0 then
@@ -234,8 +238,8 @@ function ENT:CompleteProcess()
                         self:SyncSlot(itemData.slot)
                     end
 
-                    self:AddItem(recipe.item, recipe.amount, nil, 1, 6)
-                    self:AddItem("charcoal", charcoalProduced, nil, 1, 6)
+                    self:AddItem(recipe.item, recipe.amount, nil, 7, 12)
+                    self:AddItem("charcoal", charcoalProduced, nil, 7, 12)
                 end
             end
         end
@@ -295,6 +299,7 @@ function ENT:ConstructInventory(panel, data, rows)
     Container:Dock(FILL)
     local LeftMargin = ScrW() * 0.02
     local RightMargin = ScrW() * 0.05
+    -- bottom controls (toggle button, etc.)
     local Controls = Container:Add("Panel")
     Controls:Dock(BOTTOM)
     Controls:SetTall(ScrH() * 0.13)
@@ -326,36 +331,38 @@ function ENT:ConstructInventory(panel, data, rows)
     ToggleButton:SetActiveColor(Color(106, 177, 49))
     ToggleButton.Think = function(me)
         local On = tobool(self:GetNW2Bool("gRust.Enabled", false))
-        if On then
-            if not me.On then
-                me.On = true
-                me:SetText("Turn Off")
-                ToggleButton:SetDefaultColor(Color(102, 59, 39))
-                ToggleButton:SetHoveredColor(Color(136, 87, 47))
-                ToggleButton:SetActiveColor(Color(177, 68, 49))
-            end
-        else
-            if me.On then
-                me.On = false
-                me:SetText("Turn On")
-                ToggleButton:SetDefaultColor(Color(39, 102, 65))
-                ToggleButton:SetHoveredColor(Color(47, 136, 47))
-                ToggleButton:SetActiveColor(Color(106, 177, 49))
-            end
+        if On and not me.On then
+            me.On = true
+            me:SetText("Turn Off")
+            me:SetDefaultColor(Color(102, 59, 39))
+            me:SetHoveredColor(Color(136, 87, 47))
+            me:SetActiveColor(Color(177, 68, 49))
+        elseif not On and me.On then
+            me.On = false
+            me:SetText("Turn On")
+            me:SetDefaultColor(Color(39, 102, 65))
+            me:SetHoveredColor(Color(47, 136, 47))
+            me:SetActiveColor(Color(106, 177, 49))
         end
     end
 
     ToggleButton.DoClick = function(me) self:Togglez() end
-    local function CreateRow(name)
+    ------------------------------------------------------------------------
+    -- unified function for creating inventory rows (input/output/etc.)
+    ------------------------------------------------------------------------
+    local i = 1
+    local function CreateGridRow(name, tag)
         local Grid = Container:Add("gRust.Inventory.SlotGrid")
         Grid:Dock(BOTTOM)
         Grid:SetCols(6)
         Grid:SetRows(1)
-        Grid:SetInventoryOffset(0)
+        Grid:SetInventoryOffset((i - 1) * 6)
         Grid:SetEntity(self)
         Grid:SetMargin(data.margin)
         Grid:DockMargin(LeftMargin, 0, RightMargin, ScrH() * 0.01)
         Grid:SetTall((data.wide / 8) + data.margin)
+        -- tag the grid so you can reference it later
+        Grid.InvType = tag -- "INPUT" or "OUTPUT"
         local Name = Container:Add("Panel")
         Name:Dock(BOTTOM)
         Name:SetTall(ScrH() * 0.03)
@@ -365,10 +372,21 @@ function ENT:ConstructInventory(panel, data, rows)
             surface.DrawRect(0, 0, w, h)
             draw.SimpleText(name, "gRust.38px", w * 0.01, h * 0.5, Color(255, 255, 255, 200), 0, 1)
         end
+
+        i = i + 1
+        return Grid
     end
 
-    CreateRow("Output")
-    CreateRow("Furnace")
+    -- actually create the rows
+    local OutputGrid = CreateGridRow("OUTPUT", "OUTPUT")
+    OutputGrid:SetInventoryOffset(6)
+    local InputGrid = CreateGridRow("INPUT", "INPUT")
+    InputGrid:SetInventoryOffset(0)
+    -- OUTPUT second (slots 7–12)
+    self.InputGrid = InputGrid
+    self.OutputGrid = OutputGrid
+    ------------------------------------------------------------------------
+    -- close inventory if too far
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
     if distance > 200 then
         gRust.CloseInventory()
