@@ -389,8 +389,8 @@ function GetSocketsFromEntity(entity)
     local entAng = entity:GetAngles()
     
     for i, socket in ipairs(buildingsTable[buildingType].sockets) do
-        local worldPos = entPos + entAng:Forward() * socket.pos.x + entAng:Right() * socket.pos.y + entAng:Up() * socket.pos.z
-        local worldAng = entAng + socket.ang
+        local worldPos = entity:LocalToWorld(socket.pos)
+        local worldAng = entity:LocalToWorldAngles(socket.ang)
         
         table.insert(sockets, {
             type = socket.type,

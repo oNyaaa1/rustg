@@ -40,13 +40,6 @@ function ENT:Initialize()
     self.MaxUses = 1
     self.CurrentUses = 0
 
-
-    -- Auto-remove after 5 minutes if not picked up
-    timer.Simple(300, function()
-        if IsValid(self) then
-            self:Remove()
-        end
-    end)
 end
 
 function ENT:Use(activator, caller)
