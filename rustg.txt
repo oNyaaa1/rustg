@@ -1,8 +1,8 @@
 "rustg"
 {
 	"base"		    "base"
-	"title"		    "rust"
+	"title"		    "gRust"
 	"maps"		    ""
-	"category"	    "rustorig"
+	"category"	    "pvp"
 	"menusystem"	"1"
 }
