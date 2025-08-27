@@ -41,6 +41,7 @@ ENT.ProcessItems = {
 
 ENT.DisplayIcon = gRust.GetIcon("open")
 function ENT:Initialize()
+    self.Fire = false
     if CLIENT then return end
     self:SetModel("models/deployable/furnace.mdl")
     self:PhysicsInitStatic(SOLID_VPHYSICS)
@@ -62,14 +63,27 @@ function ENT:Initialize()
     self:SetNW2Bool("gRust.Processing", false)
 end
 
-function ENT:Toggle()
-    if CLIENT then
-        net.Start("gRust.ProcessToggle")
-        net.WriteEntity(self)
-        net.SendToServer()
-        return
+function ENT:SyncSlot(i)
+    -- Example: Network the slot's item data to clients
+    local item = self.Inventory[i]
+    if item then
+        -- You might want to send item class, quantity, etc.
+        self:SetNW2String("Slot_" .. i .. "_Class", item:GetItem())
+        self:SetNW2Int("Slot_" .. i .. "_Quantity", item:GetQuantity())
+    else
+        self:SetNW2String("Slot_" .. i .. "_Class", "")
+        self:SetNW2Int("Slot_" .. i .. "_Quantity", 0)
     end
+end
 
+function ENT:SyncAllSlots()
+    if not self.Inventory then return end
+    for i = 1, #self.Inventory do
+        self:SyncSlot(i)
+    end
+end
+
+function ENT:Toggle()
     local enabled = self:GetNW2Bool("gRust.Enabled", false)
     if not enabled then
         if self:CanProcess() then
@@ -85,6 +99,15 @@ function ENT:Toggle()
     end
     return true
 end
+
+function ENT:Use(activator, caller)
+    if caller:IsPlayer() then self.LastUser = caller end
+end
+
+net.Receive("gRust.ProcessToggle", function(len, ply)
+    local ent = net.ReadEntity()
+    if IsValid(ent) and ent:GetClass() == "rust_furnace" and ent.LastUser == ply then ent:Toggle() end
+end)
 
 function ENT:CanProcess()
     if not self.ProcessItems then return false end
@@ -141,12 +164,34 @@ function ENT:StartProcessing()
     timer.Create("ProcessTimer_" .. self:EntIndex(), self.ProcessTime, 1, function() if IsValid(self) then self:CompleteProcess() end end)
 end
 
-function ENT:CompleteProcess()
-    if not self.CurrentProcessingItems or #self.CurrentProcessingItems == 0 then
-        self:StopProcessing()
-        return
+function ENT:AddItem(itemClass, amount, data, startSlot, endSlot)
+    startSlot = startSlot or 1
+    endSlot = endSlot or 6
+    for i = startSlot, endSlot do
+        local slotItem = self.Inventory[i]
+        if slotItem and slotItem:GetItem() == itemClass then
+            slotItem:AddQuantity(amount)
+            self:SyncAllSlots()
+            return true
+        end
     end
 
+    for i = startSlot, endSlot do
+        if not self.Inventory[i] then
+            self.Inventory[i] = gRust.CreateItem(itemClass, amount, data)
+            self:SyncAllSlots()
+            return true
+        end
+    end
+    return false -- No space
+end
+
+function ENT:CompleteProcess()
+    --if not self.CurrentProcessingItems or #self.CurrentProcessingItems == 0 then
+    -- s//elf:StopProcessing()
+    --  return
+    -- end
+    --
     if not self.ProcessWoodConsumed then
         local totalWoodNeeded = 0
         for _, itemData in pairs(self.CurrentProcessingItems) do
@@ -236,6 +281,13 @@ function ENT:Draw()
     end
 end
 
+function ENT:Togglez()
+    print(self)
+    net.Start("gRust.ProcessToggle")
+    net.WriteEntity(self)
+    net.SendToServer()
+end
+
 local Container
 function ENT:ConstructInventory(panel, data, rows)
     if IsValid(Container) then Container:Remove() end
@@ -273,7 +325,7 @@ function ENT:ConstructInventory(panel, data, rows)
     ToggleButton:SetHoveredColor(Color(47, 136, 47))
     ToggleButton:SetActiveColor(Color(106, 177, 49))
     ToggleButton.Think = function(me)
-        local On = self:GetNW2Bool("gRust.Enabled", false)
+        local On = tobool(self:GetNW2Bool("gRust.Enabled", false))
         if On then
             if not me.On then
                 me.On = true
@@ -293,7 +345,7 @@ function ENT:ConstructInventory(panel, data, rows)
         end
     end
 
-    ToggleButton.DoClick = function(me) self:Toggle() end
+    ToggleButton.DoClick = function(me) self:Togglez() end
     local function CreateRow(name)
         local Grid = Container:Add("gRust.Inventory.SlotGrid")
         Grid:Dock(BOTTOM)
@@ -315,6 +367,7 @@ function ENT:ConstructInventory(panel, data, rows)
         end
     end
 
+    CreateRow("Output")
     CreateRow("Furnace")
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
     if distance > 200 then

@@ -33,7 +33,6 @@ function ENT:ConstructInventory(panel, data, rows)
 		return
 
 	end
-gRust.Inventory.Slot
 
 
     local Rows = rows or (self.InventorySlots / 6)

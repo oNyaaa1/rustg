@@ -65,7 +65,6 @@ function ENT:ConstructInventory(panel, data, rows)
 	ButtonContainer:Dock(BOTTOM)
 
 	ButtonContainer:SetTall(scrh * 0.075)
-gRust.Inventory.Slot
 	ButtonContainer:DockMargin(0, scrh * 0.005, 0, 0)
 
 	ButtonContainer:DockPadding(scrh * 0.0075, scrh * 0.0075, scrh * 0.0075, scrh * 0.0075)
@@ -105,7 +104,6 @@ gRust.Inventory.Slot
 	end
 
 
-gRust.Inventory.Slot
 	local CTall = scrh * 0.175
 
 	local ScrapContainer = Container:Add("Panel")

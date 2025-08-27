@@ -39,7 +39,6 @@ local function HandleDeploy(_, pl)
     --end
     local ent = ents.Create(Class)
     if not IsValid(ent) then return end
-    print(Class, ent)
     ent:SetPos(pos)
     ent:SetAngles(ang)
     ent:SetNW2Entity("gRust.Owner", pl)
