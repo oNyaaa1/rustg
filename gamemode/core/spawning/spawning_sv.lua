@@ -9,7 +9,7 @@ local RANDOM_SPAWNS = 150 -- Number of random positions to find
 
 CreateConVar("gr_spawnsystem_creatures", "90", {FCVAR_ARCHIVE}, "Chickens that spawn")
 CreateConVar("gr_spawnsystem_ores", "150", {FCVAR_ARCHIVE}, "Ores that spawn")
-CreateConVar("gr_spawnsystem_hemp", "90", {FCVAR_ARCHIVE}, "Hemp that spawns")
+CreateConVar("gr_spawnsystem_hemp", "90", {FCVAR_ARCHIVE}, "Hemp that spawn")
 CreateConVar("gr_spawnsystem_ore_pickups", "80", {FCVAR_ARCHIVE}, "Ore pickups that spawn")
 
 local creatureSpawns = GetConVar("gr_spawnsystem_creatures"):GetInt()
@@ -38,7 +38,7 @@ local RoadSignSpawns = {
 local function FindRandomPlacesOnMap(count)
     local positions = {}
     local attempts = 0
-    local maxAttempts = count * 5 -- Try 5x more attempts than needed
+    local maxAttempts = count * 5
     
     while #positions < count and attempts < maxAttempts do
         attempts = attempts + 1
@@ -65,10 +65,12 @@ function SpawningSystem.SpawnRocks()
     
     for _, pos in pairs(positions) do
         if not isvector(pos) then continue end
+
+        local lowerPos = pos - Vector(0, 0, 20)
         
         local ent = ents.Create("rust_ore")
         if IsValid(ent) then
-            ent:SetPos(pos)
+            ent:SetPos(lowerPos)
             ent:SetSkin(math.random(1, 3))
             ent:Spawn()
             ent:Activate()
@@ -105,21 +107,21 @@ function SpawningSystem.SpawnHemp()
     local positions = FindRandomPlacesOnMap(hempSpawns)
     local spawnedCount = 0
     local pairCount = 0
-    
     for _, pos in ipairs(positions) do
-        -- Spawn first hemp plant
+        
+        local lowerPos = pos - Vector(0, 0, 10)
+        
         local ent = ents.Create("rust_map_hemp")
         if IsValid(ent) then
-            ent:SetPos(pos)
+            ent:SetPos(lowerPos)
             ent:Spawn()
             ent:Activate()
             ent:DropToFloor()
             spawnedCount = spawnedCount + 1
             
-            -- 30% chance to spawn second hemp plant nearby
             if math.random(1, 100) <= 30 then
                 local offset = Vector(math.random(-80, 80), math.random(-80, 80), 0)
-                local nearbyPos = pos + offset
+                local nearbyPos = lowerPos + offset
                 
                 local ent2 = ents.Create("rust_map_hemp")
                 if IsValid(ent2) then
@@ -140,13 +142,14 @@ end
 function SpawningSystem.SpawnOrePickups()
     local positions = FindRandomPlacesOnMap(orePickupSpawns)
     local spawnedCount = 0
-    
     for _, pos in pairs(positions) do
         if not isvector(pos) then continue end
-        
+
+        local lowerPos = pos - Vector(0, 0, 15)
+
         local ent = ents.Create("rust_orepickup")
         if IsValid(ent) then
-            ent:SetPos(pos)
+            ent:SetPos(lowerPos)
             ent:Spawn()
             ent:Activate()
             ent:DropToFloor()
@@ -181,15 +184,8 @@ end
 
 -- Main spawning function
 function SpawningSystem.SpawnAll()
-    if game.GetMap() ~= "rust_highland_v1_3a" then
-        Logger("[Spawning] Wrong map (" .. game.GetMap() .. "), changing to rust_highland_v1_3a")
-        game.ConsoleCommand("changelevel rust_highland_v1_3a\n")
-        return
-    end
-    
     Logger("[Spawning] Starting entity spawning on map: " .. game.GetMap())
     
-    -- Spawn each type with a small delay between them
     SpawningSystem.SpawnRocks()
     
     timer.Simple(1, function()
@@ -220,8 +216,6 @@ hook.Add("InitPostEntity", "gRust.SpawningSystem", function()
     end)
 end)
 
--- Export the system for external use
-gRust = gRust or {}
 gRust.SpawningSystem = SpawningSystem
 
 -- Add console command for manual spawning (admin only)
@@ -229,6 +223,5 @@ concommand.Add("grust_spawn_all", function(ply, cmd, args)
     if IsValid(ply) and not ply:IsSuperAdmin() then return end
     SpawningSystem.SpawnAll()
 end)
-
 
 Logger("Spawning system loaded")
