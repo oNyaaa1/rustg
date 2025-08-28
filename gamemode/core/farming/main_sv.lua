@@ -20,8 +20,40 @@ local CREATURES_ENTITIES = {
     ["npc_vj_f_killerchicken"] = true
 }
 
+local HOTSPOT_RADIUS = 30
+local function SendTreeHit(ply, ent)
+    local tr = ply:GetEyeTrace()
+    if not tr.Hit or tr.Entity ~= ent then return end
+    local hitPos = tr.HitPos
+    -- Offset the hitpos randomly around the tree
+    local radius = 1 -- adjust for how far the X can move around
+    local randomOffset = VectorRand() * radius
+    randomOffset.z = math.Rand(-10, 10) -- smaller vertical offset
+    hitPos = hitPos + randomOffset
+    ent.HotspotPos = hitPos
+    net.Start("gRust.TreeEffects")
+    net.WriteVector(hitPos)
+    net.WriteAngle(ply:GetAngles())
+    net.WriteEntity(ent)
+    net.Broadcast()
+end
+
+local WOOD_WEAPONS = {
+    ["rust_rock"] = {
+        mult = 1
+    },
+    ["rust_stonehatchet"] = {
+        mult = 1.3
+    },
+    ["rust_hatchet"] = {
+        mult = 1.8
+    }
+}
+
 hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
     local ply = dmg:GetAttacker()
+    if not ply.DamageCoolDown then ply.DamageCoolDown = 0 end
+    if not ply.TreeDamageCoolDown then ply.TreeDamageCoolDown = 0 end
     if not IsValid(ply) or not ply:IsPlayer() then return end
     local wep = ply:GetActiveWeapon()
     if not IsValid(wep) then return end
@@ -35,12 +67,21 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
         end
 
         LoggerPlayer(ply, "is damaging a tree")
-        net.Start("gRust.TreeEffects")
-        net.WriteVector(ply:GetEyeTrace().HitPos)
-        net.WriteAngle(ply:GetAngles())
-        net.WriteEntity(ent)
-        net.Broadcast()
-        gRust.Mining.MineTrees(ply, ent, maxHP, weapon, class)
+        --SendTreeHit(ply, ent)
+        local attacker = dmg:GetAttacker()
+        if not IsValid(attacker) or not attacker:IsPlayer() then return end
+        local hitPos = dmg:GetDamagePosition()
+        if ent.HotspotPos and hitPos:DistToSqr(ent.HotspotPos) <= (HOTSPOT_RADIUS * HOTSPOT_RADIUS) and ply.TreeDamageCoolDown < CurTime() then
+            ply.TreeDamageCoolDown = CurTime() + 0.5
+            gRust.Mining.MineTrees(ply, ent, maxHP, weapon, class)
+        end
+
+        -- Spawn a new hotspot after each hit
+        SendTreeHit(ply, ent)
+        if ply.DamageCoolDown < CurTime() then
+            ply.DamageCoolDown = CurTime() + 0.5
+            gRust.Mining.MineTrees(ply, ent, maxHP, weapon, class)
+        end
     end
 
     local isCreature = CREATURES_ENTITIES[ent:GetClass()]

@@ -6,6 +6,24 @@ gRust = gRust or {
     Config = {},
 }
 
+-- Returns a random hit position on the surface of the tree facing the player
+function GetRandomHitPos(ent, ply)
+    if not IsValid(ent) or not IsValid(ply) then return ent:GetPos() end
+    local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
+    local trace = ply:GetEyeTrace()
+    local localPos = trace.HitPos //+ Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), math.Rand(mins.z, maxs.z))
+    -- Convert local to world
+    local worldPos = ent:LocalToWorld(localPos)
+    -- Trace from player's eyes to the tree to clamp it to the surface
+    local tr = util.TraceLine({
+        start = ply:EyePos(),
+        endpos = worldPos,
+        filter = ply
+    })
+    -- Return the hit position on the tree surface
+    return tr.HitPos
+end
+
 CONFIG = CONFIG or {}
 LANG = LANG or {}
 local IncludeCL = CLIENT and include or AddCSLuaFile
