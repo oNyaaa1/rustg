@@ -11,11 +11,13 @@ CreateConVar("gr_spawnsystem_creatures", "90", {FCVAR_ARCHIVE}, "Chickens that s
 CreateConVar("gr_spawnsystem_ores", "150", {FCVAR_ARCHIVE}, "Ores that spawn")
 CreateConVar("gr_spawnsystem_hemp", "90", {FCVAR_ARCHIVE}, "Hemp that spawn")
 CreateConVar("gr_spawnsystem_ore_pickups", "80", {FCVAR_ARCHIVE}, "Ore pickups that spawn")
+CreateConVar("gr_spawnsystem_junkpiles", "15", {FCVAR_ARCHIVE}, "Junk piles that spawn")
 
 local creatureSpawns = GetConVar("gr_spawnsystem_creatures"):GetInt()
 local oreSpawns = GetConVar("gr_spawnsystem_ores"):GetInt()
 local hempSpawns = GetConVar("gr_spawnsystem_hemp"):GetInt()
 local orePickupSpawns = GetConVar("gr_spawnsystem_ore_pickups"):GetInt()
+local junkPileSpawns = GetConVar("gr_spawnsystem_junkpiles"):GetInt()
 
 -- Predefined spawn positions
 local RoadSignSpawns = {
@@ -160,6 +162,24 @@ function SpawningSystem.SpawnOrePickups()
     Logger("[Spawning] Spawned " .. spawnedCount .. " ore pickups")
 end
 
+function SpawningSystem.SpawnJunkPiles()
+    local positions = FindRandomPlacesOnMap(junkPileSpawns)
+    local spawnedCount = 0
+
+    for _, pos in pairs(positions) do
+        local ent = ents.Create("rust_junkpile")
+        if IsValid(ent) then
+            ent:SetPos(pos)
+            ent:Spawn()
+            ent:Activate()
+            ent:DropToFloor()
+            spawnedCount = spawnedCount + 1
+        end
+    end
+
+    Logger("[Spawning] Spawned " .. spawnedCount .. " junk piles")
+end
+
 -- Spawn roadsigns
 function SpawningSystem.SpawnRoadSigns()
     local spawnedCount = 0
@@ -197,14 +217,19 @@ function SpawningSystem.SpawnAll()
     end)
     
     timer.Simple(3, function()
-        SpawningSystem.SpawnRoadSigns()
-    end)
-
-    timer.Simple(4, function()
         SpawningSystem.SpawnOrePickups()
     end)
 
+    timer.Simple(4, function()
+        SpawningSystem.SpawnJunkPiles()
+    end)
+
     timer.Simple(5, function()
+        SpawningSystem.SpawnRoadSigns()
+    end)
+
+
+    timer.Simple(6, function()
         Logger("[Spawning] All entity spawning completed!")
     end)
 end
