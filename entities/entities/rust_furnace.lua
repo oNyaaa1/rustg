@@ -88,20 +88,6 @@ ENT.Ores["wood"] = {
 function ENT:GetOreData(itemType)
     return self.Ores[itemType]
 end
--- ULX/ULib compatibility: Always allow use and physgun pickup for rust_furnace
-if SERVER then
-    hook.Add("PlayerUse", "gRust_ULX_AllowFurnaceUse", function(ply, ent)
-        if IsValid(ent) and ent:GetClass() == "rust_furnace" then
-            return true
-        end
-    end)
-
-    hook.Add("PhysgunPickup", "gRust_ULX_AllowFurnacePickup", function(ply, ent)
-        if IsValid(ent) and ent:GetClass() == "rust_furnace" then
-            return true
-        end
-    end)
-end
 
 function ENT:GetProcessTimeForItem(itemType)
     local ore = self:GetOreData(itemType)

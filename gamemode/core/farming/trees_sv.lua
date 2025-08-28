@@ -75,7 +75,7 @@ local function MakeTreeFall(ent)
 
     -- Respawn tree after 10-15 minutes
     timer.Simple(math.random(600, 900), function()
-        local newTree = ents.Create("prop_dynamic")
+        local newTree = ents.Create("rust_trees")
         if IsValid(newTree) then
             newTree:SetModel(treeModel)
             newTree:SetPos(treePos)

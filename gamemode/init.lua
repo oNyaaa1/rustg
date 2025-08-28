@@ -9,13 +9,9 @@ util.AddNetworkString("gRust.ServerConfig")
 util.AddNetworkString("gRust.AC.NetCode")
 util.AddNetworkString("gRust.AC.SendData")
 util.AddNetworkString("gRust.Interact")
-
 timer.Create("AntiCheatTester", 120, 0, function()
     for k, v in pairs(player.GetAll()) do
-        if v.Injected == true then
-            continue
-        end
-
+        if v.Injected == true then continue end
         LoggerPlayer(v, "was banned for not injecting the anticheat")
         v:Ban(0, false)
         v:Kick("Cheating")
@@ -159,6 +155,7 @@ local function GetWipeStats()
 end
 
 hook.Add("InitPostEntity", "WipeStart", function()
+    if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end
     timer.Simple(2, function()
         if InitializeDatabase() then
             UpdateHostname()
@@ -211,5 +208,5 @@ end)
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     local distance = listener:GetPos():Distance(speaker:GetPos())
-    return distance <= 200 
+    return distance <= 200
 end
