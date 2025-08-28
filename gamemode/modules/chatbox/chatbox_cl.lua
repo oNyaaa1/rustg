@@ -491,6 +491,11 @@ hook.Add("OnScreenSizeChanged", "RustChatboxResChange", ChatInit)
 
 if rustChatBox then ChatInit() end
 
+StaffRanks = {
+    ["superadmin"] = "Staff"
+}
+
+
 local TEAM_CHAT_COLOR = Color(30, 160, 40)
 net.Receive("gRust.SendChat", function(len)
     local pl = net.ReadPlayer()
@@ -507,7 +512,7 @@ net.Receive("gRust.SendChat", function(len)
         chat.AddTextOverride(TEAM_CHAT_COLOR, "[TEAM] ", pl, color_white, ": ", message)
     else
         if (rank) then
-            chat.AddTextOverride(color, "[" .. rank .. "] ", pl, color_white, ": ", message)
+            chat.AddTextOverride(color, "[" .. StaffRanks[rank] .. "] ", pl, color_white, ": ", message)
         else
             chat.AddTextOverride(pl, color_white, ": ", message)
         end
