@@ -208,3 +208,8 @@ concommand.Add("!wipe", function(ply)
     else
     end
 end)
+
+function GM:PlayerCanHearPlayersVoice(listener, speaker)
+    local distance = listener:GetPos():Distance(speaker:GetPos())
+    return distance <= 200 
+end
