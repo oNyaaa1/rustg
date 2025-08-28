@@ -37,8 +37,9 @@ hook.Add("EntityTakeDamage", "gRust.ResourceHits", function(ent, dmg)
         LoggerPlayer(ply, "is damaging a tree")
         net.Start("gRust.TreeEffects")
         net.WriteVector(ply:GetEyeTrace().HitPos)
+        net.WriteAngle(ply:GetAngles())
         net.WriteEntity(ent)
-        net.Send(ply)
+        net.Broadcast()
         gRust.Mining.MineTrees(ply, ent, maxHP, weapon, class)
     end
 
