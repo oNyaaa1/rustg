@@ -42,6 +42,9 @@ gRust.Mining.IsValidMiningTool = function(weaponClass)
 end
 
 gRust.Mining.MineOres = function(ply, ent, weapon, class)
+     if not ply.Wood_Cutting_Tool then ply.Wood_Cutting_Tool = 0 end
+    if ply.Wood_Cutting_Tool > CurTime() then return end
+    ply.Wood_Cutting_Tool = CurTime() + 1
     local tool = ORE_WEAPONS[class]
     if not tool then return end
     local seq = ORE_SEQ[ent:GetSkin()] or ORE_SEQ[1]

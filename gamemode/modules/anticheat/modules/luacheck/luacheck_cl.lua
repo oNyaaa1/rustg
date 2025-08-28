@@ -12,7 +12,6 @@ jit.attach(function(fn)
             net.WriteString("Unknown source: " .. (sourceIndex or source or "Unknown"))
             net.SendToServer()
         end
-        print(sourceIndex, source)
     end
 end, "bc")
 
@@ -48,7 +47,6 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
                 net.WriteString("Disallowed global: " .. global)
                 net.SendToServer()
             end
-            print(global)
         end
     end
 
@@ -67,7 +65,6 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
                 net.WriteString("JIT Check (" .. funcName .. ")")
                 net.SendToServer()
             end
-            print(funcName)
         end
     end
 
@@ -79,7 +76,6 @@ hook.Add("Think", "gRust.AC.LuaCheck", function()
                 net.WriteString("Disallowed hook: " .. hookName)
                 net.SendToServer()
             end
-            print(hookName)
         end
     end
 end)

@@ -123,6 +123,9 @@ gRust.Mining.SpawnCreatureCorpse = function(ent)
 end
 
 gRust.Mining.MineCreatures = function(ply, ent, weapon, class)
+    if not ply.Wood_Cutting_Tool then ply.Wood_Cutting_Tool = 0 end
+    if ply.Wood_Cutting_Tool > CurTime() then return end
+    ply.Wood_Cutting_Tool = CurTime() + 1
     -- Only handle creature corpses
     if ent:GetClass() == "rust_creature_corpse" then
         local creatureType = ent:GetCreatureType()
