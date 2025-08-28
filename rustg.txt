@@ -3,6 +3,6 @@
 	"base"		    "base"
 	"title"		    "gRust"
 	"maps"		    ""
-	"category"	    "pvp"
+	"category"	    "rust"
 	"menusystem"	"1"
 }

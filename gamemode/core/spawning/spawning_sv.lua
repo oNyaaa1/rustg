@@ -36,6 +36,13 @@ local RoadSignSpawns = {
     {pos = Vector(-6139.575684, 14378.451172, 456.877289), ang = Angle(2.820352, 86.799835, 0.000000)}
 }
 
+-- Animal spawning configuration
+local AnimalTypes = {
+    {entity = "npc_rust_chicken", scale = 1.75},
+    {entity = "npc_rust_deer", scale = 1.0},
+    {entity = "npc_rust_bear", scale = 1.0}
+}
+
 -- Find random valid positions on the map
 local function FindRandomPlacesOnMap(count)
     local positions = {}
@@ -84,24 +91,41 @@ function SpawningSystem.SpawnRocks()
     Logger("[Spawning] Spawned " .. spawnedCount .. " rocks")
 end
 
--- Spawn chickens
-function SpawningSystem.SpawnChickens()
+-- Spawn animals (chickens, deer, bears)
+function SpawningSystem.SpawnAnimals()
     local positions = FindRandomPlacesOnMap(creatureSpawns)
     local spawnedCount = 0
+    local animalCounts = {}
+    
+    -- Initialize counters
+    for _, animalType in pairs(AnimalTypes) do
+        animalCounts[animalType.entity] = 0
+    end
     
     for _, pos in pairs(positions) do
-        local ent = ents.Create("npc_vj_f_killerchicken")
+        -- Select random animal type
+        local selectedAnimal = AnimalTypes[math.random(1, #AnimalTypes)]
+        
+        local ent = ents.Create(selectedAnimal.entity)
         if IsValid(ent) then
             ent:SetPos(pos)
             ent:Spawn()
             ent:Activate()
-            ent:SetModelScale(1.75, 0)
+            ent:SetModelScale(selectedAnimal.scale, 0)
             ent:DropToFloor()
             spawnedCount = spawnedCount + 1
+            animalCounts[selectedAnimal.entity] = animalCounts[selectedAnimal.entity] + 1
         end
     end
     
-    Logger("[Spawning] Spawned " .. spawnedCount .. " chickens")
+    -- Log spawned animals
+    local logMessage = "[Spawning] Spawned " .. spawnedCount .. " animals: "
+    for entity, count in pairs(animalCounts) do
+        if count > 0 then
+            logMessage = logMessage .. count .. " " .. entity .. ", "
+        end
+    end
+    Logger(logMessage:sub(1, -3)) -- Remove trailing ", "
 end
 
 -- Spawn hemp plants
@@ -209,7 +233,7 @@ function SpawningSystem.SpawnAll()
     SpawningSystem.SpawnRocks()
     
     timer.Simple(1, function()
-        SpawningSystem.SpawnChickens()
+        SpawningSystem.SpawnAnimals()
     end)
     
     timer.Simple(2, function()

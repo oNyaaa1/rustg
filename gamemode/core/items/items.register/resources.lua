@@ -112,6 +112,18 @@ Item:SetModel("models/items/cloth.mdl")
 Item:SetSound("cloth")
 gRust.RegisterItem(Item)
 --
+-- Bone Fragments
+--
+Item = gRust.ItemRegister("bone.fragments")
+Item:SetName("Bone Fragments")
+Item:SetDescription("Bone Fragments are a resource obtained from harvesting animal corpses. They can be used in various crafting recipes, including the creation of bone tools and armor.")
+Item:SetCategory("Resources")
+Item:SetStack(2500)
+Item:SetIcon("materials/items/resources/bone_fragments.png")
+Item:SetModel("models/items/bone_fragments.mdl")
+Item:SetSound("seeds")
+gRust.RegisterItem(Item)
+--
 -- Scrap
 --
 Item = gRust.ItemRegister("scrap")

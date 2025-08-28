@@ -1,8 +1,22 @@
 local CREATURE_LOOT = {
-    ["npc_vj_f_killerchicken"] = {
+    ["npc_rust_chicken"] = {
         health = 100, -- How much damage needed to kill it
         loot = {
-            {item = "cloth", min = 1, max = 2, name = "Cloth"},
+            {item = "bone.fragments", min = 1, max = 1, name = "Bone Fragments"},
+            {item = "fat.animal", min = 1, max = 1, name = "Animal Fat"}
+        }
+    },
+    ["npc_rust_deer"] = {
+        health = 150, -- How much damage needed to kill it
+        loot = {
+            {item = "bone.fragments", min = 1, max = 2, name = "Bone Fragments"},
+            {item = "fat.animal", min = 1, max = 2, name = "Animal Fat"}
+        }
+    },
+    ["npc_rust_bear"] = {
+        health = 200, -- How much damage needed to kill it
+        loot = {
+            {item = "bone.fragments", min = 1, max = 3, name = "Bone Fragments"},
             {item = "fat.animal", min = 1, max = 3, name = "Animal Fat"}
         }
     }
@@ -37,7 +51,8 @@ local function MakeCreatureCorpse(ent, damageForce)
     }
     local trace = util.TraceLine(traceData)
     local groundPos = trace.Hit and trace.HitPos or creaturePos
-    groundPos = groundPos + Vector(0, 0, 10) -- Lift 10 units above ground
+    -- Start the corpse higher in the air so it falls down naturally
+    local spawnPos = groundPos + Vector(0, 0, 10) -- Start 100 units above ground
     
     -- Create a creature corpse entity (like in Rust)
     local corpse = ents.Create("rust_creature_corpse")
@@ -46,7 +61,7 @@ local function MakeCreatureCorpse(ent, damageForce)
     end
     
     corpse:SetModel(creatureModel)
-    corpse:SetPos(groundPos)
+    corpse:SetPos(spawnPos) -- Spawn in the air
     corpse:SetAngles(creatureAngles)
     
     -- Try spawning with error handling
@@ -64,40 +79,6 @@ local function MakeCreatureCorpse(ent, damageForce)
     corpse:SetHealth(CREATURE_LOOT[creatureClass].health)
     corpse:SetMaxHealth(CREATURE_LOOT[creatureClass].health)
     corpse:SetCreatureType(creatureClass)
-    
-    -- Make it fall down and settle properly
-    local phys = corpse:GetPhysicsObject()
-    if IsValid(phys) then
-        phys:Wake()
-        phys:SetMaterial("flesh") -- Set material to prevent bouncing
-        
-        -- Apply gentle downward force
-        phys:ApplyForceCenter(Vector(0, 0, -500))
-        
-        -- After settling, make it static and ensure it doesn't fall through
-        timer.Simple(3, function()
-            if IsValid(corpse) and IsValid(phys) then
-                -- Do another ground check to make sure it's positioned correctly
-                local finalTrace = {
-                    start = corpse:GetPos() + Vector(0, 0, 20),
-                    endpos = corpse:GetPos() - Vector(0, 0, 50),
-                    filter = corpse
-                }
-                local finalGroundTrace = util.TraceLine(finalTrace)
-                if finalGroundTrace.Hit then
-                    corpse:SetPos(finalGroundTrace.HitPos + Vector(0, 0, 5))
-                end
-                
-                phys:EnableMotion(false)
-                corpse:SetMoveType(MOVETYPE_NONE)
-                corpse:SetSolid(SOLID_VPHYSICS)
-            end
-        end)
-    else
-        -- If no physics, just make sure it's positioned correctly
-        corpse:SetMoveType(MOVETYPE_NONE)
-        corpse:SetSolid(SOLID_VPHYSICS)
-    end
     
     -- Make it slightly darker to show it's dead
     corpse:SetColor(Color(180, 180, 180, 255))
