@@ -5,7 +5,6 @@ SWEP.ViewModel = "models/weapons/darky_m/rust/c_bow.mdl"
 function SWEP:PrimaryAttack()
     
     if self.Charged and CurTime() > self.NextAttack then
-        print(CurTime() > self.NextAttack)
         self.NextAttack = CurTime() + 1.35
         self.Charged = false
         self.Fired = true

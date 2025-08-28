@@ -62,7 +62,6 @@ function ENT:ConstructInventory(panel, data, rows)
     local NWInts = {"WoodUpkeep", "StoneUpkeep", "MetalUpkeep", "HQUpkeep"}
     for i = 1, 4 do
         local r = Resources[i]
-        print(r[i])
         local Resource = ResourceContainer:Add("Panel")
         Resource:Dock(LEFT)
         local Wide = scrw * 0.187 - ((scrw * 0.075) * 2)

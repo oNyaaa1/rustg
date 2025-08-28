@@ -400,7 +400,6 @@ function ENT:Draw()
 end
 
 function ENT:Togglez()
-    print(self)
     net.Start("gRust.ProcessToggle")
     net.WriteEntity(self)
     net.SendToServer()

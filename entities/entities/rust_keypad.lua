@@ -14,5 +14,4 @@ function ENT:Initialize()
 end
 
 function ENT:Interact(pl)
-    print(pl)
 end

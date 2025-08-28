@@ -19,16 +19,64 @@ function ENT:Initialize()
     self.OriginalAngles = self:GetAngles()
     self.IsAnimating = false
     self.DoorCode = nil
-    self.AuthorizedPlayers = {}
+    --self.AuthorizedPlayers = {}
     self:SetUseType(SIMPLE_USE)
 end
 
+local function FindNearestTC(pos, radius)
+    local nearest, best = nil, math.huge
+    for _, v in ipairs(ents.FindInSphere(pos, radius or 300)) do
+        if IsValid(v) and v:GetClass() == "rust_toolcupboard" then
+            local d = pos:Distance(v:GetPos())
+            if d < best then
+                best = d
+                nearest = v
+                print(best, near)
+            end
+        end
+    end
+    return nearest
+end
+
+--[[function ENT:Use(activator, caller)
+    if not IsValid(caller) and not caller:IsPlayer() then return end
+    if self.IsAnimating then return end
+    local tc = FindNearestTC(self:GetPos(), 300)
+    if self:GetBodygroup(2) == 0 then self:ToggleDoor() end
+    local hasAccess = false
+    if tc then
+        for k, v in pairs(tc.AuthorizedPlayers) do
+            if v == caller:SteamID64() then hasAccess = true end
+        end
+
+        if hasAccess and self:GetBodygroup(2) > 0 then self:ToggleDoor() end
+    end
+end]]
 function ENT:Use(activator, caller)
     if not IsValid(activator) or not activator:IsPlayer() then return end
     if self.IsAnimating then return end
-    if self:GetBodygroup(2) == 1 and self.DoorCode then if not self.AuthorizedPlayers[activator:SteamID()] then return end end
-    self:ToggleDoor()
+
+    local tc = FindNearestTC(self:GetPos(), 300)
+
+    -- Door unlocked, anyone can open
+    if self:GetBodygroup(2) == 0 then
+        self:ToggleDoor()
+        return
+    end
+
+    -- Door locked, check TC authorization
+    if tc then
+        local hasAccess = tc:IsAuthorized(activator)
+        if hasAccess then
+            self:ToggleDoor()
+        else
+            activator:ChatPrint("You are not authorized on the nearby Tool Cupboard.")
+        end
+    else
+        activator:ChatPrint("A Tool Cupboard is required nearby to unlock this door.")
+    end
 end
+
 
 function ENT:ToggleDoor()
     if self.IsAnimating then return end
