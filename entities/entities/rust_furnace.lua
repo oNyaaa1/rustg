@@ -104,6 +104,7 @@ function ENT:GetCharcoalProductionForItem(itemType)
     return ore and ore.charcoalProduction or 1
 end
 
+
 ENT.DisplayIcon = gRust.GetIcon("open")
 function ENT:Initialize()
     self.Fire = false
@@ -310,6 +311,16 @@ end
     self.CurrentProcessingItems = {}
     if self:GetNW2Bool("gRust.Enabled", false) and self:CanProcess() then timer.Simple(0.1, function() if IsValid(self) then self:StartProcessing() end end) end
 end]]
+
+function ENT:FindEmptySlot(startSlot, endSlot, item)
+    for i = startSlot, endSlot do
+        if not self.Inventory[i] then
+            return i
+        end
+    end
+    return nil
+end
+
 function ENT:CompleteProcess()
     if not self.ProcessWoodConsumed then
         local totalWoodNeeded = 0
