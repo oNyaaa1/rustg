@@ -388,7 +388,7 @@ function ENT:ConstructInventory(panel, data, rows)
     ------------------------------------------------------------------------
     -- close inventory if too far
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
-    if distance > 200 then
+    if distance > 50 then
         gRust.CloseInventory()
         return
     end
