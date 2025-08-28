@@ -405,6 +405,11 @@ function ENT:Togglez()
     net.SendToServer()
 end
 
+if SERVER then
+    hook.Add("PlayerUse", "gRust_ULX_AllowFurnaceUse", function(ply, ent) if IsValid(ent) and ent:GetClass() == "rust_furnace" then return true end end)
+    hook.Add("PhysgunPickup", "gRust_ULX_AllowFurnacePickup", function(ply, ent) if IsValid(ent) and ent:GetClass() == "rust_furnace" then return true end end)
+end
+
 local Container
 function ENT:ConstructInventory(panel, data, rows)
     if IsValid(Container) then Container:Remove() end
