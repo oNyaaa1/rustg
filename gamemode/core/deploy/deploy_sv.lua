@@ -11,12 +11,18 @@ local function HandleDeploy(_, pl)
     if not Deploy then return end
     local pos, ang, hitEnt = pl:GetDeployPosition(Deploy)
     if not pos then return end
+    print(Deploy.Socket)
     if Deploy.Socket == "lock" then
         local tr = pl:GetDeployData()
-        if not IsValid(tr.Entity) or not string.find(tr.Entity:GetClass(), "door") then return end
-        if tr.Entity:GetBodygroup(2) ~= 0 then return end
-        if tr.Entity:GetNW2Bool("gRust.LockInUse", false) then return end
-        hitEnt = tr.Entity
+        PrintTable(tr)
+        if not IsValid(tr.Entity) then return end
+        local doors_compl = string.find(tr.Entity:GetClass(), "door")
+        print(doors_compl)
+        if doors_compl then
+            if tr.Entity:GetBodygroup(2) ~= 0 then return end
+            if tr.Entity:GetNW2Bool("gRust.LockInUse", false) then return end
+            hitEnt = tr.Entity
+        end
     elseif Deploy.Socket then
         if not pl.DeploySocket or sockID == 0 then return end
         if IsValid(hitEnt) and hitEnt:GetNW2Bool("gRust.InUse", false) then return end

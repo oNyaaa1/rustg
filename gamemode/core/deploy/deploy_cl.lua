@@ -26,23 +26,20 @@ function gRust.ResetDeploy()
 end
 
 local function UpdateDeploy()
-    if not IsValid(gRust.DeployEntity) then return end
-    local Data = gRust.DeployEntity.Data
-    local pos, ang = LocalPlayer():GetDeployPosition(Data)
-    LastSocketID = LocalPlayer().DeploySocketID
-    if not Data.Socket then ang:RotateAroundAxis(ang:Up(), BaseRotation + DeployRotation) end
-    gRust.DeployEntity:SetPos(pos)
-    gRust.DeployEntity:SetAngles(ang)
-    local ent = nil
-    for k, v in pairs(ents.FindInSphere(gRust.DeployEntity:GetPos(), 30)) do
-        if v:GetClass() == "rust_doorwood" then ent = v end
-    end
-
-    if ent ~= nil then gRust.DeployEntity:SetParent(ent) end
-    if LocalPlayer():CanDeploy(Data, gRust.DeployEntity) then
-        gRust.DeployEntity:SetMaterial("models/darky_m/rust_building/build_ghost")
-    else
-        gRust.DeployEntity:SetMaterial("models/darky_m/rust_building/build_ghost_disallow")
+    if IsValid(gRust.DeployEntity) then
+        local Data = gRust.DeployEntity.Data
+        local pos, ang = LocalPlayer():GetDeployPosition(Data)
+        if not pos and not ang then return end
+        LastSocketID = LocalPlayer().DeploySocketID
+        if not Data.Socket then ang:RotateAroundAxis(ang:Up(), BaseRotation + DeployRotation) end
+        gRust.DeployEntity:SetPos(pos)
+        gRust.DeployEntity:SetAngles(ang)
+        if gRust.DeployEntity then gRust.DeployEntity:SetParent(ent) end
+        if LocalPlayer():CanDeploy(Data, gRust.DeployEntity) then
+            gRust.DeployEntity:SetMaterial("models/darky_m/rust_building/build_ghost")
+        else
+            gRust.DeployEntity:SetMaterial("models/darky_m/rust_building/build_ghost_disallow")
+        end
     end
 end
 

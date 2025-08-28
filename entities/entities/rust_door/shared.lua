@@ -9,9 +9,8 @@ function ENT:SetupDataTables()
 end
 
 ENT.Deploy = {}
-ENT.Deploy.Model = "models/deployable/door_wood.mdl"
 ENT.Deploy.Socket = "door"
-ENT.Deploy.OnDeploy = function(pl, ent, tr) print(pl, ent, tr) end
+ENT.Deploy.OnDeploy = function(pl, ent, tr) ent.Deploy.Model = ent:GetModel() end
 ENT.CanPickup = true
 ENT.Options = {
     {

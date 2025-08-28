@@ -5,6 +5,7 @@ local LockPos = Vector(45, 2, 37)
 local LockAng = Angle(0, 0, 0)
 ENT.Deploy = {}
 ENT.Deploy.Position = function(pl, tr)
+    if not IsValid(tr.Entity) then return end
     if tr.Entity:IsValid() and string.find(tr.Entity:GetClass(), "door") then
         return tr.Entity:LocalToWorld(tr.Entity.LockPos or LockPos), tr.Entity:GetAngles() + LockAng
     else
