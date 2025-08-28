@@ -43,6 +43,67 @@ ENT.ProcessItems = {
     }
 }
 
+-- Define all ores & their processing data in one place
+ENT.Ores = {
+    ["sulfur.ore"] = {
+        processTime = 2.0,
+        woodConsumption = 1,
+        charcoalProduction = 1,
+        output = {
+            item = "sulfur",
+            amount = 1
+        }
+    },
+    ["metal.ore"] = {
+        processTime = 1.67,
+        woodConsumption = 2,
+        charcoalProduction = 2,
+        output = {
+            item = "metal.fragments",
+            amount = 1
+        }
+    },
+    ["hq.metal.ore"] = {
+        processTime = 6.67,
+        woodConsumption = 3,
+        charcoalProduction = 3,
+        output = {
+            item = "metal.refined",
+            amount = 1
+        }
+    },
+}
+
+-- Special case: wood turns into charcoal directly
+ENT.Ores["wood"] = {
+    processTime = 0.5,
+    woodConsumption = 0, -- wood consumes itself
+    charcoalProduction = 1,
+    output = {
+        item = "charcoal",
+        amount = 1
+    }
+}
+
+function ENT:GetOreData(itemType)
+    return self.Ores[itemType]
+end
+
+function ENT:GetProcessTimeForItem(itemType)
+    local ore = self:GetOreData(itemType)
+    return ore and ore.processTime or self.ProcessTime
+end
+
+function ENT:GetWoodConsumptionForItem(itemType)
+    local ore = self:GetOreData(itemType)
+    return ore and ore.woodConsumption or 1
+end
+
+function ENT:GetCharcoalProductionForItem(itemType)
+    local ore = self:GetOreData(itemType)
+    return ore and ore.charcoalProduction or 1
+end
+
 ENT.DisplayIcon = gRust.GetIcon("open")
 function ENT:Initialize()
     self.Fire = false
@@ -114,7 +175,7 @@ net.Receive("gRust.ProcessToggle", function(len, ply)
 end)
 
 function ENT:CanProcess()
-    if not self.ProcessItems then return false end
+    --if not self.ProcessItems then return false end
     local itemsToProcess = {}
     local totalWoodNeeded = 0
     for i = 1, 6 do
@@ -190,7 +251,7 @@ function ENT:AddItem(itemClass, amount, data, startSlot, endSlot)
     return false -- No space
 end
 
-function ENT:CompleteProcess()
+--[[function ENT:CompleteProcess()
     --if not self.CurrentProcessingItems or #self.CurrentProcessingItems == 0 then
     -- s//elf:StopProcessing()
     --  return
@@ -240,6 +301,59 @@ function ENT:CompleteProcess()
 
                     self:AddItem(recipe.item, recipe.amount, nil, 7, 12)
                     self:AddItem("charcoal", charcoalProduced, nil, 7, 12)
+                end
+            end
+        end
+    end
+
+    self:StopProcessing()
+    self.CurrentProcessingItems = {}
+    if self:GetNW2Bool("gRust.Enabled", false) and self:CanProcess() then timer.Simple(0.1, function() if IsValid(self) then self:StartProcessing() end end) end
+end]]
+function ENT:CompleteProcess()
+    if not self.ProcessWoodConsumed then
+        local totalWoodNeeded = 0
+        for _, itemData in pairs(self.CurrentProcessingItems) do
+            totalWoodNeeded = totalWoodNeeded + self:GetWoodConsumptionForItem(itemData.type)
+        end
+
+        local woodConsumed = 0
+        for i = 1, 6 do
+            local item = self.Inventory[i]
+            if item and item:GetItem() == "wood" and item:GetQuantity() > 0 then
+                local toConsume = math.min(item:GetQuantity(), totalWoodNeeded - woodConsumed)
+                item:RemoveQuantity(toConsume)
+                woodConsumed = woodConsumed + toConsume
+                if item:GetQuantity() <= 0 then
+                    self:RemoveSlot(i)
+                else
+                    self:SyncSlot(i)
+                end
+
+                if woodConsumed >= totalWoodNeeded then break end
+            end
+        end
+
+        self.ProcessWoodConsumed = true
+    end
+
+    for _, itemData in pairs(self.CurrentProcessingItems) do
+        local item = self.Inventory[itemData.slot]
+        if item and item:GetItem() == itemData.type then
+            local ore = self:GetOreData(item:GetItem())
+            if ore and ore.output then
+                local canAddResult = self:FindEmptySlot(7, 12, gRust.CreateItem(ore.output.item, ore.output.amount)) ~= nil
+                local canAddCharcoal = self:FindEmptySlot(7, 12, gRust.CreateItem("charcoal", ore.charcoalProduction)) ~= nil
+                if canAddResult and canAddCharcoal then
+                    item:RemoveQuantity(1)
+                    if item:GetQuantity() <= 0 then
+                        self:RemoveSlot(itemData.slot)
+                    else
+                        self:SyncSlot(itemData.slot)
+                    end
+
+                    self:AddItem(ore.output.item, ore.output.amount, nil, 7, 12)
+                    self:AddItem("charcoal", ore.charcoalProduction, nil, 7, 12)
                 end
             end
         end
