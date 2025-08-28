@@ -1,7 +1,7 @@
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.PrintName = "Rust Building"
-ENT.Author = "Zohart"
+ENT.Author = "Dev Team"
 ENT.Spawnable = false
 ENT.AdminOnly = false
 ENT.Category = "GRust"

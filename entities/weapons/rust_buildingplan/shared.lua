@@ -10,7 +10,7 @@ table.IndexByKey = function(tab, key)
 end
 
 SWEP.PrintName = "Building Plan"
-SWEP.Author = "Zohart"
+SWEP.Author = "Dev Team"
 SWEP.Instructions = "Left mouse to place, Right mouse for pie menu"
 SWEP.Category = "GRust"
 SWEP.Spawnable = true

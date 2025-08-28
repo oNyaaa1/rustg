@@ -1,7 +1,7 @@
 -- Базовая информация о SWEP
 SWEP.Base = "rust_base"
 SWEP.PrintName = "Hammer"
-SWEP.Author = "Zohart"
+SWEP.Author = "Dev Team"
 SWEP.Instructions = "Right mouse for pie menu - upgrade, rotate, demolish"
 SWEP.Category = "GRust"
 
