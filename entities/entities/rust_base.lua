@@ -96,6 +96,7 @@ function gRust.CreateRespawn(class, pos, ang, time)
 		ent:SetPos(pos)
 		ent:SetAngles(ang)
 		ent:Spawn()
+		ent:DropToFloor()
 	end)
 end
 
