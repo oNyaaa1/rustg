@@ -16,6 +16,7 @@ function PLAYER:RequestInventory(ent)
     net.SendToServer()
 end
 
+
 function gRust.UpdateInventory()
     if not IsValid(LocalPlayer()) then return end
     if IsValid(gRust.Hotbar) then gRust.Hotbar:Update() end

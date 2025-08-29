@@ -31,6 +31,13 @@ function PANEL:UpdateSlot(slot)
     if not self.Slots[slotIndex] then return end
     local item = Inventory[slot]
     self.Slots[slotIndex]:SetItem(item)
+    local class = self.Entity:GetNW2String("Slot_" .. self.SlotIndex .. "_Class")
+    local qty = self.Entity:GetNW2Int("Slot_" .. self.SlotIndex .. "_Quantity", 0)
+    if class ~= self.CurrentClass or qty ~= self.CurrentQty then
+        self.CurrentClass = class
+        self.CurrentQty = qty
+        self:UpdateVisual() -- redraw slot icon/amount
+    end
 end
 
 function PANEL:PerformLayout()

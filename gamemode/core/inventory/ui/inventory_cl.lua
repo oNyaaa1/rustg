@@ -90,7 +90,7 @@ local function MiddlePanel()
 		gRust.CloseInventory()
 		gRust.OpenCrafting()
 	end
-
+	
 	Button.PaintOver = function(me, w, h)
 		draw.SimpleText("CRAFTING", "gRust.54px", w * 0.393, h * 0.5, Color(243, 243, 243, 150), 1, 1)
 		local Padding = h * 0.15
@@ -136,6 +136,7 @@ local function RightPanel()
 				margin = Margin,
 				wide = RightWidth + RightShift,
 				entity = Framezz.Container.Entity,
+				Frame = Framezz,
 			})
 		end
 	end

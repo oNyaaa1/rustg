@@ -172,6 +172,16 @@ function PLAYER:DropItem(slot, amount)
     return true
 end
 
+net.Receive("gRust.Inventory.SyncSlot", function()
+    local ent = net.ReadEntity()
+    local slot = net.ReadUInt(6)
+    local item = net.ReadItem()
+    -- Update your local representation
+    ent.Inventory[slot] = item
+    -- Refresh the UI if it's open
+    if gRust.Inventory.Container then gRust.Inventory.UpdateContainer() end
+end)
+
 function PLAYER:IsClothingItem(item)
     if not item then return false end
     local itemClass = item:GetItem()
@@ -445,9 +455,7 @@ function PLAYER:HasItem(itemClass, amount)
     local totalAmount = 0
     for i = 1, self.InventorySlots do
         local invItem = self.Inventory[i]
-        if invItem and invItem:GetItem() == itemClass then
-            totalAmount = totalAmount + invItem:GetQuantity()
-        end
+        if invItem and invItem:GetItem() == itemClass then totalAmount = totalAmount + invItem:GetQuantity() end
     end
     --print(totalAmount)
     return totalAmount >= amount

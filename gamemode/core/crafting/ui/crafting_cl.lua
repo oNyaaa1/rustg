@@ -245,6 +245,15 @@ local function LeftPanel()
 			favorite.DoClick = function() end
 			item.DoClick = function() Frame.SelectItem(v) end
 			item.DoDoubleClick = function(me) gRust.RequestCraft(v:GetClass(), CraftAmount, SelectedSkin) end
+			-- 👇 ADD THIS for right-click auto add
+			item.DoRightClick = function(me)
+				net.Start("gRust.Craft") -- or your inventory add net message
+				net.WriteString(v:GetClass()) -- the item class
+				net.WriteUInt(1, 7) -- amount (here 1)
+				net.SendToServer()
+			end
+
+			item.DoDoubleClick = function(me) gRust.RequestCraft(v:GetClass(), CraftAmount, SelectedSkin) end
 			local LockPadding = Height * 0.02
 			item.Paint = function(me, w, h)
 				if me:IsHovered() or favorite:IsHovered() then

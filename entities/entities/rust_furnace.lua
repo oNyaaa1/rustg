@@ -85,6 +85,24 @@ ENT.Ores["wood"] = {
     }
 }
 
+function ENT:MarkSlotDirty(i)
+    self.DirtySlots = self.DirtySlots or {}
+    self.DirtySlots[i] = true
+end
+
+function ENT:Think()
+    if self.DirtySlots then
+        for i, _ in pairs(self.DirtySlots) do
+            self:SyncSlot(i)
+        end
+
+        self.DirtySlots = {}
+    end
+
+    self:NextThink(CurTime() + 0.25)
+    return true
+end
+
 function ENT:GetOreData(itemType)
     return self.Ores[itemType]
 end
@@ -103,7 +121,6 @@ function ENT:GetCharcoalProductionForItem(itemType)
     local ore = self:GetOreData(itemType)
     return ore and ore.charcoalProduction or 1
 end
-
 
 ENT.DisplayIcon = gRust.GetIcon("open")
 function ENT:Initialize()
@@ -228,6 +245,7 @@ function ENT:StartProcessing()
     self:SetNW2Float("gRust.ProcessStart", CurTime())
     self:SetNW2Float("gRust.ProcessTime", self.ProcessTime)
     timer.Create("ProcessTimer_" .. self:EntIndex(), self.ProcessTime, 1, function() if IsValid(self) then self:CompleteProcess() end end)
+    self:SyncAllSlots()
 end
 
 function ENT:AddItem(itemClass, amount, data, startSlot, endSlot)
@@ -311,12 +329,9 @@ end
     self.CurrentProcessingItems = {}
     if self:GetNW2Bool("gRust.Enabled", false) and self:CanProcess() then timer.Simple(0.1, function() if IsValid(self) then self:StartProcessing() end end) end
 end]]
-
 function ENT:FindEmptySlot(startSlot, endSlot, item)
     for i = startSlot, endSlot do
-        if not self.Inventory[i] then
-            return i
-        end
+        if not self.Inventory[i] then return i end
     end
     return nil
 end
@@ -373,6 +388,7 @@ function ENT:CompleteProcess()
     self:StopProcessing()
     self.CurrentProcessingItems = {}
     if self:GetNW2Bool("gRust.Enabled", false) and self:CanProcess() then timer.Simple(0.1, function() if IsValid(self) then self:StartProcessing() end end) end
+    self:SyncAllSlots()
 end
 
 function ENT:StopProcessing()
@@ -417,8 +433,27 @@ function ENT:Togglez()
 end
 
 if SERVER then
-    hook.Add("PlayerUse", "gRust_ULX_AllowFurnaceUse", function(ply, ent) if IsValid(ent) and ent:GetClass() == "rust_furnace" then return true end end)
-    hook.Add("PhysgunPickup", "gRust_ULX_AllowFurnacePickup", function(ply, ent) if IsValid(ent) and ent:GetClass() == "rust_furnace" then return true end end)
+    -- Allow furnaces to be used by any player
+    hook.Add("PlayerUse", "gRust_FurnaceUse", function(ply, ent)
+        if IsValid(ent) and ent:GetClass() == "rust_furnace" then
+            return true -- allow use
+        end
+    end)
+
+    -- Allow physgun pickup for admins (optional)
+    hook.Add("PhysgunPickup", "gRust_FurnacePhysgun", function(ply, ent)
+        if IsValid(ent) and ent:GetClass() == "rust_furnace" then
+            return ply:IsAdmin() -- only admins can move
+        end
+    end)
+end
+
+function ENT:CanPlayerUse(ply)
+    if not IsValid(ply) then return false end
+    if ply:IsAdmin() then -- admins always allowed
+        return true
+    end
+    return ply:GetPos():Distance(self:GetPos()) <= 50
 end
 
 local Container
@@ -475,7 +510,14 @@ function ENT:ConstructInventory(panel, data, rows)
         end
     end
 
-    ToggleButton.DoClick = function(me) self:Togglez() end
+    ToggleButton.DoClick = function(me)
+        if self:CanPlayerUse(LocalPlayer()) then
+            self:Togglez()
+        else
+            chat.AddText(Color(255, 50, 50), "You are too far from the furnace or not allowed!")
+        end
+    end
+
     ------------------------------------------------------------------------
     -- unified function for creating inventory rows (input/output/etc.)
     ------------------------------------------------------------------------
@@ -518,6 +560,11 @@ function ENT:ConstructInventory(panel, data, rows)
     -- close inventory if too far
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
     if distance > 50 then
+        gRust.CloseInventory()
+        return
+    end
+
+    if not self:CanPlayerUse(LocalPlayer()) then
         gRust.CloseInventory()
         return
     end
