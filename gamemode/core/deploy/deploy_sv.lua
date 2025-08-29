@@ -11,7 +11,6 @@ local function HandleDeploy(_, pl)
     if not Deploy then return end
     local pos, ang, hitEnt = pl:GetDeployPosition(Deploy)
     if not pos then return end
-    print(Deploy.Socket)
     if Deploy.Socket == "lock" then
         local tr = pl:GetDeployData()
         PrintTable(tr)

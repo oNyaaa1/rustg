@@ -391,7 +391,7 @@ function GetSocketsFromEntity(entity)
     for i, socket in ipairs(buildingsTable[buildingType].sockets) do
         local worldPos = entity:LocalToWorld(socket.pos)
         local worldAng = entity:LocalToWorldAngles(socket.ang)
-        
+        if SERVER and not entity:IsInWorld() then continue end
         table.insert(sockets, {
             type = socket.type,
             pos = worldPos,
@@ -412,7 +412,7 @@ function IsSocketOccupied(pos, socketType, parentEntity)
         if IsValid(ent) and ent:GetClass() == "rust_building" then
             if ent != parentEntity then
                 local distance = pos:Distance(ent:GetPos())
-                if distance < 20 then
+                if distance < 25 then
                     return true
                 end
             end
@@ -539,6 +539,7 @@ function CheckGroundSupport(pos, buildingType)
     if tr.Hit then
         if IsValid(tr.Entity) then
             local entClass = tr.Entity:GetClass()
+            print(entClass)
             if entClass == "worldspawn" or entClass == "func_detail" or entClass == "prop_physics" then
                 return true
             end
