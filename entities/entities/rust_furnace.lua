@@ -255,7 +255,7 @@ function ENT:AddItem(itemClass, amount, data, startSlot, endSlot)
         local slotItem = self.Inventory[i]
         if slotItem and slotItem:GetItem() == itemClass then
             slotItem:AddQuantity(amount)
-            self:SyncAllSlots()
+            self:MarkSlotDirty(i) -- mark dirty
             return true
         end
     end
@@ -263,7 +263,7 @@ function ENT:AddItem(itemClass, amount, data, startSlot, endSlot)
     for i = startSlot, endSlot do
         if not self.Inventory[i] then
             self.Inventory[i] = gRust.CreateItem(itemClass, amount, data)
-            self:SyncAllSlots()
+            self:MarkSlotDirty(i) -- mark dirty
             return true
         end
     end
@@ -448,14 +448,6 @@ if SERVER then
     end)
 end
 
-function ENT:CanPlayerUse(ply)
-    if not IsValid(ply) then return false end
-    if ply:IsAdmin() then -- admins always allowed
-        return true
-    end
-    return ply:GetPos():Distance(self:GetPos()) <= 50
-end
-
 local Container
 function ENT:ConstructInventory(panel, data, rows)
     if IsValid(Container) then Container:Remove() end
@@ -556,15 +548,12 @@ function ENT:ConstructInventory(panel, data, rows)
     -- OUTPUT second (slots 7–12)
     self.InputGrid = InputGrid
     self.OutputGrid = OutputGrid
+    timer.Simple(2, function() gRust.OpenInventory() end)
+    --)
     ------------------------------------------------------------------------
     -- close inventory if too far
     local distance = LocalPlayer():GetPos():Distance(self:GetPos())
-    if distance > 50 then
-        gRust.CloseInventory()
-        return
-    end
-
-    if not self:CanPlayerUse(LocalPlayer()) then
+    if distance > 300 then
         gRust.CloseInventory()
         return
     end

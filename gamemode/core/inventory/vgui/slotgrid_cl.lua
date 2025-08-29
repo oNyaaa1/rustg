@@ -23,6 +23,26 @@ end
 function PANEL:OnSelection(i)
 end
 
+function PANEL:SyncSlot(i)
+    -- Example: Network the slot's item data to clients
+    local item = self.Inventory[i]
+    if item then
+        -- You might want to send item class, quantity, etc.
+        self:SetNW2String("Slot_" .. i .. "_Class", item:GetItem())
+        self:SetNW2Int("Slot_" .. i .. "_Quantity", item:GetQuantity())
+    else
+        self:SetNW2String("Slot_" .. i .. "_Class", "")
+        self:SetNW2Int("Slot_" .. i .. "_Quantity", 0)
+    end
+end
+
+function PANEL:SyncAllSlots()
+    if not self.Inventory then return end
+    for i = 1, #self.Inventory do
+        self:SyncSlot(i)
+    end
+end
+
 function PANEL:UpdateSlot(slot)
     local Inventory = self:GetInventory()
     if not Inventory then return end
@@ -37,6 +57,7 @@ function PANEL:UpdateSlot(slot)
         self.CurrentClass = class
         self.CurrentQty = qty
         self:UpdateVisual() -- redraw slot icon/amount
+        self:SyncAllSlots()
     end
 end
 
@@ -102,6 +123,7 @@ function PANEL:PerformLayout()
 
     self:Update()
     self.NeedLayout = false
+    self:SyncAllSlots()
 end
 
 function PANEL:Update()
@@ -111,6 +133,7 @@ function PANEL:Update()
         local Item = Inventory[i + (self:GetInventoryOffset() or 0)]
         if not self.Slots[i] then continue end
         self.Slots[i]:SetItem(Item)
+        self:SyncAllSlots()
     end
 end
 
