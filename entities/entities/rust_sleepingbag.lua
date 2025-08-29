@@ -4,6 +4,7 @@ ENT.Base = "rust_base"
 ENT.Deploy = {}
 ENT.Deploy.Model = "models/deployable/sleeping_bag.mdl"
 ENT.DisplayIcon = gRust.GetIcon("sleepingbag")
+ENT.Deploy.OnDeploy = function(a, b, c) AddSleepingBagToPlayer(pl, ent) end
 ENT.ShowHealth = true
 ENT.RespawnDelay = 300
 ENT.Pickup = "sleeping_bag"
