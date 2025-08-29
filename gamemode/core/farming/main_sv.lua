@@ -17,7 +17,9 @@ local TREE_MODELS = {
 }
 
 local CREATURES_ENTITIES = {
-    ["npc_vj_f_killerchicken"] = true
+    ["npc_rust_chicken"] = true,
+    ["npc_rust_deer"] = true,
+    ["npc_rust_bear"] = true
 }
 
 local HOTSPOT_RADIUS = 30

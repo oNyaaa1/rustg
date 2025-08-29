@@ -6,11 +6,19 @@ ENT.DisplayIcon = gRust.GetIcon("gear")
 function ENT:Initialize()
     if CLIENT then return end
     
-    self:PhysicsInitStatic(SOLID_VPHYSICS)
-    self:SetMoveType(MOVETYPE_NONE)
+    self:PhysicsInit(SOLID_VPHYSICS)
+    self:SetMoveType(MOVETYPE_VPHYSICS)
     self:SetSolid(SOLID_VPHYSICS)
     self:SetDamageable(true)
     self:SetDamageSound(true)
+    
+    -- Enable physics so the corpse can fall down
+    local phys = self:GetPhysicsObject()
+    if IsValid(phys) then
+        phys:Wake()
+        phys:EnableMotion(true)
+        phys:EnableGravity(true)
+    end
     
     -- Default values - will be set when spawned
     self:SetHealth(100)
